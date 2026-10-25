@@ -38,10 +38,16 @@ jobs:
         if: env.SHEETID != '' && env.SHEETSAPIKEY != ''
         run: npm run getData
       - name: Build the site
-        # a project site lives at https://<user>.github.io/<repo>/, so asset urls need that prefix
-        run: npm run viteBuild
-        env:
-          VITE_BASE: /${{ github.event.repository.name }}/
+        # a project site lives at https://<user>.github.io/<repo>/, so asset urls need that prefix.
+        # with a custom domain (a CNAME file in the repository root) the site is served from "/".
+        run: |
+          if [ -f CNAME ]; then
+            export VITE_BASE=/
+          else
+            export VITE_BASE=/${{ github.event.repository.name }}/
+          fi
+          npm run viteBuild
+          if [ -f CNAME ]; then cp CNAME dist/CNAME; fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -17,6 +17,13 @@ Scroll and curse data lives in `src/data/values.json`. To rebuild it from a Goog
 an API key in a `.env` file (`SHEETID=...`, `SHEETSAPIKEY=...`) and run `npm run getData`; `build.js` writes the
 file. `src/data/sampleValues.json` documents the column layout a sheet needs.
 
+## Custom domain
+
+Set the domain under Settings, Pages on GitHub and point the domain's DNS at GitHub Pages (A records to
+185.199.108.153, 185.199.109.153, 185.199.110.153 and 185.199.111.153, plus a `www` CNAME to the
+`<user>.github.io` address). Then commit a `CNAME` file containing the bare domain in the repository root;
+the deploy workflow serves the site from `/` when that file exists.
+
 ## Themes
 
 Five looks are built in (Luna, Olive, Silver, Classic, Midnight), picked from Options. A theme is one block of
