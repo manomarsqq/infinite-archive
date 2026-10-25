@@ -16,14 +16,33 @@
 </head>
 
 <body>
+    <!-- ================= HEADER + INDEX TABS ================= -->
+    <header id="siteHeader" class="site-header">
+        <button class="brand" data-tab="home" aria-label="Infinite Archive, home">
+            <img src="/assets/svg/logo.svg" alt="">
+            <span class="wordmark">Infinite <em>Archive</em></span>
+        </button>
+        <nav id="nav" class="nav" aria-label="Sections">
+            <button class="nav-tab" data-tab="home">Home</button>
+            <button class="nav-tab" data-tab="about">About</button>
+            <button class="nav-tab" data-tab="starts">Ways In</button>
+            <button class="nav-tab" data-tab="quickstart">Quickstart</button>
+            <button class="nav-tab" data-tab="items">Archive</button>
+            <button class="nav-tab" data-tab="curses">Tome</button>
+            <button class="nav-tab" data-tab="build">Codex</button>
+            <button class="nav-tab" data-tab="search">Catalogue</button>
+        </nav>
+        <button id="optionsButton" class="gear" title="Options" aria-label="Open options">&#9881;</button>
+    </header>
+
     <!-- ================= OPTIONS DIALOG ================= -->
     <div id="drawerBackdrop" class="drawer-backdrop"></div>
-    <aside id="optionsMenu" class="window dialog" aria-label="Options">
-        <header class="titlebar">
+    <aside id="optionsMenu" class="dialog" aria-label="Options">
+        <header class="dialog-head">
             <span class="title">Options</span>
-            <span class="tb-buttons"><button id="optionsClose" class="tb-close" aria-label="Close options"></button></span>
+            <button id="optionsClose" class="seal-close" aria-label="Close options"></button>
         </header>
-        <div class="window-body">
+        <div class="dialog-body">
             <fieldset class="group">
                 <legend>Appearance</legend>
                 <div class="form-grid">
@@ -55,23 +74,19 @@
                     <input type="text" id="optionsBuildsNewName" placeholder="Type a name and press Enter">
                 </div>
                 <div id="optionsBuildsDelete">
-                    <button id="optionsBuildsDeleteButton" class="xp-button danger">Delete current codex</button>
+                    <button id="optionsBuildsDeleteButton" class="btn danger">Delete current codex</button>
                 </div>
             </fieldset>
             <div class="dialog-buttons">
-                <button id="optionsOk" class="xp-button default">OK</button>
+                <button id="optionsOk" class="btn primary">OK</button>
             </div>
         </div>
     </aside>
 
     <main>
         <!-- ================= HOME ================= -->
-        <section id="home" class="tabcontent window">
-            <header class="titlebar">
-                <span class="title">Welcome to the Infinite Archive</span>
-                <span class="tb-buttons"><span class="tb-min"></span><span class="tb-max"></span><button class="tb-close" data-tab="home" aria-label="Close"></button></span>
-            </header>
-            <div class="window-body">
+        <section id="home" class="tabcontent page">
+            <div class="page-body">
                 <div class="hero">
                     <img class="hero-logo" src="/assets/svg/logo.svg" alt="">
                     <h1>The Infinite Archive</h1>
@@ -83,21 +98,20 @@
                         page and call a companion, a weapon, a vehicle, or a whole world into being. The archive
                         decides what you find. What you do with it is yours.</p>
                     <div class="hero-actions">
-                        <button class="xp-button default big" data-tab="items">Draw a scroll</button>
-                        <button class="xp-button big" data-tab="quickstart">Quickstart a character</button>
-                        <button class="xp-button big" data-tab="about">How it works</button>
+                        <button class="btn primary big" data-tab="items">Draw a scroll</button>
+                        <button class="btn big" data-tab="quickstart">Quickstart a character</button>
+                        <button class="btn big" data-tab="about">How it works</button>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- ================= ABOUT ================= -->
-        <section id="about" class="tabcontent window">
-            <header class="titlebar">
-                <span class="title">About: how scrolls are measured, ranked, and modified</span>
-                <span class="tb-buttons"><span class="tb-min"></span><span class="tb-max"></span><button class="tb-close" data-tab="home" aria-label="Close"></button></span>
+        <section id="about" class="tabcontent page">
+            <header class="page-head">
+                <h1>How the Archive Works</h1><p>Stats, keys, what each kind of scroll does, and how rank is reckoned.</p>
             </header>
-            <div class="window-body card-grid">
+            <div class="page-body card-grid">
 
                 <fieldset class="group">
                     <legend>Stats</legend>
@@ -117,18 +131,19 @@
 
                 <fieldset class="group">
                     <legend>Keys</legend>
-                    <p class="intro">You open the archive with keys. A key's star level decides which shelves it
-                        reaches: each level draws from three neighbouring ranks of scroll. Keys are earned by doing
-                        things in your story; the harder the deed, the brighter the key.</p>
+                    <p class="intro">You open the archive with keys. A key's star level decides how deep into the
+                        stacks it reaches: each level draws from three neighbouring ranks of scroll. Keys are not
+                        given, they are earned by deeds in your story. Decide what your character did, decide
+                        how big it was, and the archive hands over the matching key.</p>
                     <dl class="def-list">
-                        <div><dt class="Frank">1 Star (F–D)</dt><dd>A hard but human deed: win a fight, land a job, hunt a wolf</dd></div>
-                        <div><dt class="Erank">2 Star (E–C)</dt><dd>Peak human or faintly supernatural: a fortune in a day, a gang brought down</dd></div>
-                        <div><dt class="Drank">3 Star (D–B)</dt><dd>Seriously difficult: rob a guarded vault, win over someone famous, kill a demon</dd></div>
-                        <div><dt class="Crank">4 Star (C–A)</dt><dd>Nearly impossible: escape certain death, slay a dragon, pacify a great enemy</dd></div>
-                        <div><dt class="Brank">5 Star (B–S)</dt><dd>Extraordinary: save a city, halt an army, charm a devil's spouse</dd></div>
-                        <div><dt class="Arank">6 Star (A–SS)</dt><dd>Legendary: kill a legendary dragon, tear the wings off an angel, save a nation or a planet</dd></div>
-                        <div><dt class="SSrank">7 Star (S–SSS)</dt><dd>Mythical: break a prophecy, seduce death, shake the world</dd></div>
-                        <div><dt class="EXrank">EX Star (SS–EX)</dt><dd>Impossible: save the universe, beat every hero, make a star, unmake a galaxy</dd></div>
+                        <div><dt class="Frank">1 Star (F–D)</dt><dd>A hard day's work: anything a determined person can finish with effort and no help</dd></div>
+                        <div><dt class="Erank">2 Star (E–C)</dt><dd>Beyond most people: a feat the town talks about for a week</dd></div>
+                        <div><dt class="Drank">3 Star (D–B)</dt><dd>Dangerous: something that could plausibly kill you, done anyway</dd></div>
+                        <div><dt class="Crank">4 Star (C–A)</dt><dd>Heroic: surviving what should not be survivable, or ending what should not be endable</dd></div>
+                        <div><dt class="Brank">5 Star (B–S)</dt><dd>Something a city remembers for a generation</dd></div>
+                        <div><dt class="Arank">6 Star (A–SS)</dt><dd>Something a nation writes into its history</dd></div>
+                        <div><dt class="SSrank">7 Star (S–SSS)</dt><dd>Something the whole world feels happen</dd></div>
+                        <div><dt class="EXrank">EX Star (SS–EX)</dt><dd>Something reality itself has to adjust to</dd></div>
                     </dl>
                 </fieldset>
 
@@ -223,50 +238,48 @@
             </div>
         </section>
 
-        <!-- ================= STARTING ================= -->
-        <section id="starts" class="tabcontent window">
-            <header class="titlebar">
-                <span class="title">Starting: how your character finds the archive</span>
-                <span class="tb-buttons"><span class="tb-min"></span><span class="tb-max"></span><button class="tb-close" data-tab="home" aria-label="Close"></button></span>
+        <!-- ================= WAYS IN ================= -->
+        <section id="starts" class="tabcontent page">
+            <header class="page-head">
+                <h1>Ways In</h1><p>How your character came to hold a key, and what they start with.</p>
             </header>
-            <div class="window-body card-grid">
+            <div class="page-body card-grid">
                 <fieldset class="group prose">
                     <legend>Finding the archive</legend>
-                    <p>The archive is a framework for a story, not a rulebook. Run it however your story needs. The
-                        one thing every character has in common is a first handful of keys, and how many you get
-                        depends on how you got in.</p>
-                    <h3>Ways in</h3>
+                    <p>The archive is a framework for a story, not a rulebook. Run it however the story needs. The
+                        one thing every character shares is a first handful of keys, and how many depends on how the
+                        key reached them.</p>
                     <div class="option-list">
                         <div class="option-item">
-                            <h4>Thrown in by a god, an eldritch thing, or a wizard with a grudge</h4>
-                            <p>Someone with power and poor manners dropped you into a world with the key already in
-                                your hand. One 4-star key and two 3-star keys, with their apologies.</p>
+                            <h4>Inherited</h4>
+                            <p>The key turned up among a dead relative's effects, with no note and no explanation.
+                                You have the keys they never used: two 3-star keys and one 2-star key.</p>
                         </div>
                         <div class="option-item">
-                            <h4>A new world, no wizard involved</h4>
-                            <p>A truck, a stroke of luck, a door that should not have opened. Two 3-star keys and three
-                                1-star keys.</p>
+                            <h4>Chosen at random</h4>
+                            <p>The archive picks someone every so often, from everyone alive, for no reason anyone
+                                has found. You got the letter. One 4-star key, one 2-star key, one 1-star key.</p>
                         </div>
                         <div class="option-item">
-                            <h4>Native to the world you chose</h4>
-                            <p>You, as an ordinary citizen of that setting. Nobody important, until now. Three 3-star
-                                keys.</p>
+                            <h4>Stolen</h4>
+                            <p>It belonged to a collector, a wizard, a vault. Now it belongs to you, and someone
+                                may want it back. Keys are small and plentiful on the way out: three 2-star keys
+                                and two 1-star keys.</p>
                         </div>
                         <div class="option-item">
-                            <h4>You woke up as an existing character</h4>
-                            <p>The story's lead gets one 1-star key. A secondary character gets two 2-star keys. A
-                                bit-part character gets three 3-star keys. The further from the spotlight, the more the
-                                archive owes you.</p>
+                            <h4>Sent</h4>
+                            <p>A faction that knows what the shelves hold put the key in your hand and told you what
+                                to bring back. They equipped you well: one 4-star key and one 3-star key, and they
+                                will be expecting results.</p>
                         </div>
                         <div class="option-item">
-                            <h4>Someone in that world finds the key</h4>
-                            <p>No insert at all: a character who already lives there wakes with the archive open to
-                                them. Two 2-star keys for someone the plot cares about, three 3-star keys for someone
-                                it doesn't.</p>
+                            <h4>Died</h4>
+                            <p>The archive is what came after. You woke on its floor with a key in your fist and a
+                                second life to spend. Three 3-star keys.</p>
                         </div>
                     </div>
                     <p class="mt-1">Want it all drawn for you? Open the
-                        <button class="xp-button small" data-tab="quickstart">Quickstart</button> wizard.</p>
+                        <button class="btn small" data-tab="quickstart">Quickstart</button> wizard.</p>
                 </fieldset>
 
                 <div class="stack">
@@ -310,56 +323,44 @@
             </div>
         </section>
 
-        <!-- ================= QUICKSTART (wizard) ================= -->
-        <section id="quickstart" class="tabcontent window">
-            <header class="titlebar">
-                <span class="title">Quickstart Wizard</span>
-                <span class="tb-buttons"><span class="tb-min"></span><span class="tb-max"></span><button class="tb-close" data-tab="home" aria-label="Close"></button></span>
+        <!-- ================= QUICKSTART ================= -->
+        <section id="quickstart" class="tabcontent page">
+            <header class="page-head">
+                <h1>Quickstart</h1><p>Pick how the key reached you and how many curses to bind; the archive draws the rest.</p>
             </header>
-            <div class="wizard-head">
-                <strong>Draw a whole character</strong>
-                <span>Pick how you got in, pick how many curses to bind, and the archive draws everything for you.</span>
-            </div>
-            <div class="window-body">
+            <div class="page-body stack">
                 <fieldset class="group">
-                    <legend><span class="step-num">1</span> How did you get in?</legend>
+                    <legend><span class="step-num">1</span> How did the key reach you?</legend>
                     <div class="start-grid" id="qsStartGrid">
                         <label class="start-option">
-                            <input type="radio" name="qsStart" value="isekai-god" checked>
-                            <h4>Thrown in by a god, an eldritch thing, or a wizard</h4>
-                            <p>Someone powerful and careless dropped you here with the key.</p>
-                            <span class="ticket-chip">1&times; 4&#9733;</span> <span class="ticket-chip">2&times; 3&#9733;</span>
+                            <input type="radio" name="qsStart" value="inherited" checked>
+                            <h4>Inherited</h4>
+                            <p>Found among a dead relative's effects, unexplained.</p>
+                            <span class="ticket-chip">2&times; 3&#9733;</span> <span class="ticket-chip">1&times; 2&#9733;</span>
                         </label>
                         <label class="start-option">
-                            <input type="radio" name="qsStart" value="isekai-truck">
-                            <h4>A new world, no wizard involved</h4>
-                            <p>A truck, a stroke of luck, a door that should not have opened.</p>
-                            <span class="ticket-chip">2&times; 3&#9733;</span> <span class="ticket-chip">3&times; 1&#9733;</span>
+                            <input type="radio" name="qsStart" value="chosen">
+                            <h4>Chosen at random</h4>
+                            <p>The archive picks someone now and then. It picked you.</p>
+                            <span class="ticket-chip">1&times; 4&#9733;</span> <span class="ticket-chip">1&times; 2&#9733;</span> <span class="ticket-chip">1&times; 1&#9733;</span>
                         </label>
                         <label class="start-option">
-                            <input type="radio" name="qsStart" value="native">
-                            <h4>Native to the world you chose</h4>
-                            <p>You, as an ordinary citizen of that setting.</p>
+                            <input type="radio" name="qsStart" value="stolen">
+                            <h4>Stolen</h4>
+                            <p>It was someone else's. They may want it back.</p>
+                            <span class="ticket-chip">3&times; 2&#9733;</span> <span class="ticket-chip">2&times; 1&#9733;</span>
+                        </label>
+                        <label class="start-option">
+                            <input type="radio" name="qsStart" value="sent">
+                            <h4>Sent</h4>
+                            <p>A faction equipped you and expects something back.</p>
+                            <span class="ticket-chip">1&times; 4&#9733;</span> <span class="ticket-chip">1&times; 3&#9733;</span>
+                        </label>
+                        <label class="start-option">
+                            <input type="radio" name="qsStart" value="died">
+                            <h4>Died</h4>
+                            <p>The archive is what came after. A second life to spend.</p>
                             <span class="ticket-chip">3&times; 3&#9733;</span>
-                        </label>
-                        <label class="start-option">
-                            <input type="radio" name="qsStart" value="transmigration">
-                            <h4>You woke up as an existing character</h4>
-                            <p>The further from the spotlight, the more keys.</p>
-                            <select id="qsTransmigrationRole" aria-label="Character importance">
-                                <option value="protagonist">The lead: 1&times; 1&#9733;</option>
-                                <option value="secondary" selected>A secondary character: 2&times; 2&#9733;</option>
-                                <option value="tertiary">A bit part: 3&times; 3&#9733;</option>
-                            </select>
-                        </label>
-                        <label class="start-option">
-                            <input type="radio" name="qsStart" value="random">
-                            <h4>Someone in that world finds the key</h4>
-                            <p>No insert at all. A character who lives there wakes with the archive open.</p>
-                            <select id="qsRandomRole" aria-label="Character relevance">
-                                <option value="plot">Someone the plot cares about: 2&times; 2&#9733;</option>
-                                <option value="side" selected>Someone it doesn't: 3&times; 3&#9733;</option>
-                            </select>
                         </label>
                     </div>
                 </fieldset>
@@ -378,8 +379,8 @@
                 <fieldset class="group">
                     <legend><span class="step-num">3</span> Draw</legend>
                     <div class="row">
-                        <button id="qsRollButton" class="xp-button default big">Draw everything</button>
-                        <span class="dim">Respects your content settings. Key and category filters from the archive are not applied.</span>
+                        <button id="qsRollButton" class="btn primary big">Draw everything</button>
+                        <span class="dim">Respects your content settings. Key and shelf filters from the archive are not applied.</span>
                     </div>
                 </fieldset>
 
@@ -389,8 +390,8 @@
                         <div class="row between">
                             <div class="qs-summary" id="qsSummary"></div>
                             <div class="row">
-                                <button id="qsSaveAllButton" class="xp-button default">Keep all in codex</button>
-                                <button id="qsRerollButton" class="xp-button">Draw again</button>
+                                <button id="qsSaveAllButton" class="btn primary">Keep all in codex</button>
+                                <button id="qsRerollButton" class="btn">Draw again</button>
                             </div>
                         </div>
                     </fieldset>
@@ -407,12 +408,11 @@
         </section>
 
         <!-- ================= THE ARCHIVE (items) ================= -->
-        <section id="items" class="tabcontent window">
-            <header class="titlebar">
-                <span class="title">The Archive</span>
-                <span class="tb-buttons"><span class="tb-min"></span><span class="tb-max"></span><button class="tb-close" data-tab="home" aria-label="Close"></button></span>
+        <section id="items" class="tabcontent page">
+            <header class="page-head">
+                <h1>The Archive</h1><p>Choose a key, narrow the shelves if you like, and turn the seal.</p>
             </header>
-            <div class="window-body">
+            <div class="page-body">
                 <div class="machine-wrap">
                     <!-- The archive cabinet is the inline SVG below. Every control is a transparent hotspot laid over
                          its drawn button; --x/--y/--w/--h are percentages of the cabinet. -->
@@ -525,12 +525,11 @@
         </section>
 
         <!-- ================= THE TOME (curses) ================= -->
-        <section id="curses" class="tabcontent window">
-            <header class="titlebar">
-                <span class="title">The Tome of Curses</span>
-                <span class="tb-buttons"><span class="tb-min"></span><span class="tb-max"></span><button class="tb-close" data-tab="home" aria-label="Close"></button></span>
+        <section id="curses" class="tabcontent page">
+            <header class="page-head">
+                <h1>The Tome of Curses</h1><p>Touch the orb to read a page. Bind the curse to claim its keys.</p>
             </header>
-            <div class="window-body">
+            <div class="page-body">
                 <div class="machine-wrap">
                     <!-- The tome is the inline SVG below; the html plate, the orb button and the bind button sit in
                          the sockets it draws, positioned by the same percentages. -->
@@ -580,7 +579,6 @@
 </svg>
                         </button>
                     </div>
-                    <p class="machine-status dim">Touch the orb to read a curse. Bind it to keep it in your codex and claim its keys.</p>
                 </div>
 
                 <div class="stack">
@@ -600,46 +598,74 @@
             </div>
         </section>
 
-        <!-- ================= CODEX (build) ================= -->
-        <section id="build" class="tabcontent window">
-            <header class="titlebar">
-                <span class="title">Codex</span>
-                <span class="tb-buttons"><span class="tb-min"></span><span class="tb-max"></span><button class="tb-close" data-tab="home" aria-label="Close"></button></span>
+        <!-- ================= CODEX (build + character sheet) ================= -->
+        <section id="build" class="tabcontent page">
+            <header class="page-head">
+                <h1>Codex</h1><p>The character this codex belongs to, and everything they hold.</p>
             </header>
-            <div class="window-body">
+            <div class="page-body stack">
                 <div class="toolbar">
                     <span class="dim">Codex</span>
                     <strong class="build-name current-build-name">default</strong>
                     <span class="count" id="buildTotals"></span>
                     <span class="spacer"></span>
-                    <button id="buildManageButton" class="xp-button">Manage codices…</button>
-                    <button id="buildExportButton" class="xp-button default">Export as text</button>
+                    <button id="buildManageButton" class="btn">Manage codices…</button>
+                    <button id="buildExportButton" class="btn primary">Export as text</button>
                 </div>
-                <div class="stack">
-                    <fieldset class="group table-group">
-                        <legend>Scrolls <span class="count" data-count-for="buildItemsTable">0</span></legend>
-                        <div class="table-wrap">
-                            <table id="buildItemsTable" class="dataTable itemsTable saveTable" data-kind="items" data-extra="Remove"></table>
+
+                <!-- the character sheet: stored per codex in localStorage by pageHandler (profiles) -->
+                <fieldset class="group character-sheet" id="characterSheet">
+                    <legend>Character</legend>
+                    <div class="sheet-grid">
+                        <div class="portrait-column">
+                            <div class="portrait" id="portraitFrame">
+                                <img id="portraitImage" alt="" hidden>
+                                <span class="portrait-empty" id="portraitEmpty">No portrait yet</span>
+                            </div>
+                            <div class="row">
+                                <label class="btn small" for="portraitInput">Choose portrait…</label>
+                                <input type="file" id="portraitInput" accept="image/*" hidden>
+                                <button type="button" id="portraitClear" class="btn small">Remove</button>
+                            </div>
+                            <p class="hint">Stored in this browser only, scaled down to keep it small.</p>
                         </div>
-                    </fieldset>
-                    <fieldset class="group table-group">
-                        <legend>Curses <span class="count" data-count-for="buildCursesTable">0</span></legend>
-                        <div class="table-wrap">
-                            <table id="buildCursesTable" class="dataTable cursesTable saveTable" data-kind="curses" data-extra="Remove"></table>
+                        <div class="sheet-fields form-grid">
+                            <label for="profileName">Name</label>
+                            <input type="text" id="profileName" data-profile="name" placeholder="Who holds this codex?" autocomplete="off">
+                            <label for="profileWorld">World</label>
+                            <input type="text" id="profileWorld" data-profile="world" placeholder="The setting they live in" autocomplete="off">
+                            <label for="profileLocation">Right now</label>
+                            <input type="text" id="profileLocation" data-profile="location" placeholder="Where they are at this point in the story" autocomplete="off">
+                            <label for="profileNotes">Notes</label>
+                            <textarea id="profileNotes" data-profile="notes" rows="4" placeholder="Anything worth remembering: goals, allies, what the last scroll cost them…"></textarea>
+                            <span></span>
+                            <span class="hint" id="profileSaved"></span>
                         </div>
-                    </fieldset>
-                </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="group table-group">
+                    <legend>Scrolls <span class="count" data-count-for="buildItemsTable">0</span></legend>
+                    <div class="table-wrap">
+                        <table id="buildItemsTable" class="dataTable itemsTable saveTable" data-kind="items" data-extra="Remove"></table>
+                    </div>
+                </fieldset>
+                <fieldset class="group table-group">
+                    <legend>Curses <span class="count" data-count-for="buildCursesTable">0</span></legend>
+                    <div class="table-wrap">
+                        <table id="buildCursesTable" class="dataTable cursesTable saveTable" data-kind="curses" data-extra="Remove"></table>
+                    </div>
+                </fieldset>
             </div>
         </section>
 
         <!-- ================= CATALOGUE (search) ================= -->
-        <section id="search" class="tabcontent window">
-            <header class="titlebar">
-                <span class="title">Catalogue</span>
-                <span class="tb-buttons"><span class="tb-min"></span><span class="tb-max"></span><button class="tb-close" data-tab="home" aria-label="Close"></button></span>
+        <section id="search" class="tabcontent page">
+            <header class="page-head">
+                <h1>Catalogue</h1><p>Find a particular scroll or curse by name, series, text, or any column.</p>
             </header>
-            <div class="window-body">
-                <div class="xp-tabs">
+            <div class="page-body">
+                <div class="subtabs">
                     <button class="active" data-search="searchItems">Scrolls</button>
                     <button data-search="searchCurses">Curses</button>
                 </div>
@@ -654,7 +680,7 @@
                             <input type="text" id="searchItemsAdvanced" class="advancedSearch" placeholder='Magic:F Motion:C,D "growth type":Train'>
                         </div>
                         <div class="actions">
-                            <button type="submit" id="searchItemsButton" class="xp-button default">Search</button>
+                            <button type="submit" id="searchItemsButton" class="btn primary">Search</button>
                             <span class="dim">Comma-separate multiple values. Empty fields are ignored.</span>
                         </div>
                     </form>
@@ -676,7 +702,7 @@
                             <input type="text" id="searchCursesAdvanced" class="advancedSearch" placeholder='Target:You,Others Severity:Major'>
                         </div>
                         <div class="actions">
-                            <button type="submit" id="searchCursesButton" class="xp-button default">Search</button>
+                            <button type="submit" id="searchCursesButton" class="btn primary">Search</button>
                         </div>
                     </form>
                     <fieldset class="group table-group">
@@ -690,24 +716,10 @@
         </section>
     </main>
 
-    <!-- ================= TASKBAR ================= -->
-    <nav id="taskbar" aria-label="Site sections">
-        <button id="startButton" class="start-button" data-tab="home"><img src="/assets/svg/logo.svg" alt=""> start</button>
-        <div class="task-buttons">
-            <button class="task-button" data-tab="home">Home</button>
-            <button class="task-button" data-tab="about">About</button>
-            <button class="task-button" data-tab="starts">Starting</button>
-            <button class="task-button" data-tab="quickstart">Quickstart</button>
-            <button class="task-button" data-tab="items">Archive</button>
-            <button class="task-button" data-tab="curses">Tome</button>
-            <button class="task-button" data-tab="build">Codex</button>
-            <button class="task-button" data-tab="search">Catalogue</button>
-        </div>
-        <div class="tray">
-            <button id="optionsButton" class="tray-button" title="Options" aria-label="Open options">&#9881;</button>
-            <span id="clock"></span>
-        </div>
-    </nav>
+    <footer class="site-footer">
+        <span>Infinite Archive</span>
+        <span class="dim">free software, GPL-3.0</span>
+    </footer>
 
     <div id="toast" class="balloon" role="status" aria-live="polite">
         <strong class="toast-title"></strong>

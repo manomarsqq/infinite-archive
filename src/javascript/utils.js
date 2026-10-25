@@ -68,7 +68,7 @@ function arrayMerge(sourceArrays) {
 
 let toastTimer
 /**
- * show a short notice in the XP-style balloon above the taskbar tray (#toast in index.html)
+ * show a short notice in the XP-style balloon at the bottom right (#toast in index.html)
  * @param {string} message
  * @param {string} [title] bold first line, defaults to "Infinite Archive"
  */

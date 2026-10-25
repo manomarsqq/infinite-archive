@@ -229,13 +229,13 @@ class termRenderer {
 	 */
 	static cardActions(term, onSave) {
 		const actions = termRenderer.element("div", "rc-actions")
-		const save = termRenderer.element("button", "xp-button default", "Keep in codex")
+		const save = termRenderer.element("button", "btn primary", "Keep in codex")
 		save.addEventListener("click", () => {
 			onSave(term)
 			save.textContent = "Kept"
 			save.disabled = true
 		})
-		const copy = termRenderer.element("button", "xp-button right", "Copy")
+		const copy = termRenderer.element("button", "btn right", "Copy")
 		copy.addEventListener("click", () => copyToClipboard(term.toString(), term instanceof gachaItem ? "Item" : "Curse"))
 		actions.append(save, copy)
 		return actions

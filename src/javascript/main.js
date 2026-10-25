@@ -18,7 +18,7 @@ window.onload = function () {
  */
 function createAllEventHandlers(page) {
 
-	// tabs: taskbar buttons, window close buttons, hero buttons, inline links, and the url hash
+	// tabs: index tabs, the brand mark, hero buttons, inline links, and the url hash
 	for (let button of document.querySelectorAll("[data-tab]")) {
 		button.addEventListener("click", () => { page.changeTabTo(button.dataset.tab) })
 	}
@@ -67,7 +67,12 @@ function createAllEventHandlers(page) {
 	document.getElementById("cursesRollButton").addEventListener("click", () => { page.roll("curses") })
 	document.getElementById("cursesSaveButton").addEventListener("click", () => { page.saveLatest("curses") })
 
-	// build tab
+	// codex tab: the character sheet saves as you type, the portrait is a file input
+	for (let field of document.querySelectorAll("[data-profile]")) {
+		field.addEventListener("input", (e) => { page.profileFieldListener(e) })
+	}
+	document.getElementById("portraitInput").addEventListener("change", (e) => { page.portraitChangeListener(e.target.files[0]); e.target.value = "" })
+	document.getElementById("portraitClear").addEventListener("click", () => { page.portraitClear() })
 	document.getElementById("buildExportButton").addEventListener("click", () => { page.exportSaved() })
 	document.getElementById("buildManageButton").addEventListener("click", () => { pageHandler.openOptions() })
 

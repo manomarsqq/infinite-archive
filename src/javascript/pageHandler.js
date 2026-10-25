@@ -12,6 +12,11 @@ export { pageHandler }
 // rows rendered at most in search results, keeps the DOM sane with ~5600 items
 const MAX_SEARCH_ROWS = 500
 
+// localStorage key for the character sheets (one per codex); cookies are too small for a portrait
+const PROFILES_KEY = "infiniteArchive.profiles"
+// portraits are scaled down to this many pixels on the long side before storing
+const PORTRAIT_MAX = 360
+
 // theme names the Options dialog offers; anything else falls back to the first one (the Archive look)
 const THEMES = ["archive", "luna", "olive", "silver", "classic", "midnight"]
 
@@ -60,6 +65,12 @@ class pageHandler {
 
 	/** reveal handles for the roll in flight, so a second click skips */
 	#rolling = { items: null, curses: null }
+
+	/**
+	 * character sheets by codex name: { name, world, location, notes, portrait (data url) }
+	 * @type {Object<string, object>}
+	 */
+	#profiles = pageHandler.#loadProfiles()
 
 	/**
 	 * async build a lot of important async things.
@@ -115,7 +126,7 @@ class pageHandler {
 		this.redrawAllSaveTables()
 		this.redrawHistoryTables()
 		this.#quickstart.init()
-		this.#startClock()
+		this.loadProfile()
 		this.changeTabTo(this.#tabFromHash() || "home")
 		if (filteringHandler.usingSampleData) toast("data/values.json has not been built yet, showing the sample scrolls", "Sample data")
 	}
@@ -339,6 +350,92 @@ class pageHandler {
 		for (let label of document.querySelectorAll(".current-build-name")) label.textContent = name
 		const totals = document.getElementById("buildTotals")
 		if (totals) totals.textContent = `${this.#buildsOptions.getCurrentSavedItems().length} scrolls · ${this.#buildsOptions.getCurrentSavedCurses().length} curses`
+		this.loadProfile()
+	}
+
+	// ---------------------------------------------------------------- character sheet
+
+	/** read the sheets from localStorage; an unreadable store starts empty */
+	static #loadProfiles() {
+		try {
+			return JSON.parse(localStorage.getItem(PROFILES_KEY)) || {}
+		} catch (error) {
+			return {}
+		}
+	}
+
+	#saveProfiles() {
+		try {
+			localStorage.setItem(PROFILES_KEY, JSON.stringify(this.#profiles))
+			const note = document.getElementById("profileSaved")
+			if (note) { note.textContent = "Saved"; setTimeout(() => { note.textContent = "" }, 1200) }
+		} catch (error) {
+			toast("Could not save the character sheet. The portrait may be too large for this browser.", "Codex")
+		}
+	}
+
+	/** the sheet for the current codex, created empty on first use */
+	#profile() {
+		const key = this.#buildsOptions.getCurrentBuildKey()
+		if (!this.#profiles[key]) this.#profiles[key] = { name: "", world: "", location: "", notes: "", portrait: "" }
+		return this.#profiles[key]
+	}
+
+	/** fill the sheet form from the current codex's profile */
+	loadProfile() {
+		const profile = this.#profile()
+		for (let field of document.querySelectorAll("[data-profile]")) {
+			field.value = profile[field.dataset.profile] || ""
+		}
+		this.#renderPortrait()
+	}
+
+	/**
+	 * a sheet field changed
+	 * @param {Event} event 
+	 */
+	profileFieldListener(event) {
+		this.#profile()[event.target.dataset.profile] = event.target.value
+		this.#saveProfiles()
+	}
+
+	#renderPortrait() {
+		const image = document.getElementById("portraitImage")
+		const empty = document.getElementById("portraitEmpty")
+		const portrait = this.#profile().portrait
+		image.src = portrait || ""
+		image.hidden = !portrait
+		empty.hidden = !!portrait
+	}
+
+	/**
+	 * a portrait file was chosen: scale it down on a canvas and keep it as a data url
+	 * @param {File} file 
+	 */
+	portraitChangeListener(file) {
+		if (!file || !file.type.startsWith("image/")) return
+		const reader = new FileReader()
+		reader.onload = () => {
+			const img = new Image()
+			img.onload = () => {
+				const scale = Math.min(1, PORTRAIT_MAX / Math.max(img.width, img.height))
+				const canvas = document.createElement("canvas")
+				canvas.width = Math.round(img.width * scale)
+				canvas.height = Math.round(img.height * scale)
+				canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height)
+				this.#profile().portrait = canvas.toDataURL("image/jpeg", 0.85)
+				this.#saveProfiles()
+				this.#renderPortrait()
+			}
+			img.src = reader.result
+		}
+		reader.readAsDataURL(file)
+	}
+
+	portraitClear() {
+		this.#profile().portrait = ""
+		this.#saveProfiles()
+		this.#renderPortrait()
 	}
 
 	/**
@@ -419,7 +516,7 @@ class pageHandler {
 	}
 
 	/**
-	 * show one tab window, press its taskbar button, keep the url hash in sync
+	 * show one page, mark its index tab, keep the url hash in sync
 	 * @param {string} targetTabID
 	 */
 	changeTabTo(targetTabID) {
@@ -428,7 +525,7 @@ class pageHandler {
 		for (let tab of document.querySelectorAll(".tabcontent")) {
 			tab.classList.toggle("active", tab === newTab)
 		}
-		for (let button of document.querySelectorAll("#taskbar [data-tab]")) {
+		for (let button of document.querySelectorAll("#nav [data-tab]")) {
 			button.classList.toggle("active", button.dataset.tab === targetTabID)
 		}
 		if (location.hash !== "#" + targetTabID) history.replaceState(null, "", "#" + targetTabID)
@@ -460,7 +557,7 @@ class pageHandler {
 		for(let i = 0; i < limit; i++){
 			const row = termRenderer.createRow(dataArray[i])
 			const button = document.createElement("button")
-			button.className = "xp-button small " + buttonClass
+			button.className = "btn small " + buttonClass
 			button.textContent = buttonText
 			button.addEventListener("click", () => onClick(i))
 			row.appendChild(document.createElement("td")).appendChild(button)
@@ -629,11 +726,17 @@ class pageHandler {
 	}
 
 	/**
-	 * export current build to txt file
+	 * export current codex to a txt file: the character sheet, then every scroll and curse
 	 */
 	exportSaved() {
 		const build = this.#buildsOptions.getCurrentBuildKey()
-		let text = `<CODEX: ${build}>\n\n<SCROLLS>\n\n`;
+		const profile = this.#profile()
+		let text = `<CODEX: ${build}>\n`;
+		if (profile.name) text += `Name: ${profile.name}\n`
+		if (profile.world) text += `World: ${profile.world}\n`
+		if (profile.location) text += `Right now: ${profile.location}\n`
+		if (profile.notes) text += `Notes: ${profile.notes}\n`
+		text += `\n<SCROLLS>\n\n`;
 
 		for (let item of this.#buildsOptions.getCurrentSavedItems()) {
 			text += `${item}\n\n`;
@@ -722,14 +825,4 @@ class pageHandler {
 		return names
 	}
 
-	// ---------------------------------------------------------------- taskbar clock
-
-	/** the tray clock, because a taskbar without one looks wrong */
-	#startClock() {
-		const clock = document.getElementById("clock")
-		if (!clock) return
-		const update = () => { clock.textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) }
-		update()
-		setInterval(update, 30000)
-	}
 }

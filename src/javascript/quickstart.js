@@ -21,36 +21,13 @@ export { quickstart }
  *   toast(message)
  */
 
-// key counts per start. keep in sync with the text on the Starting tab.
-// starts with "roles" have a sub-choice (a <select> inside the option).
+// key counts per way in. keep in sync with the text on the Ways In tab and the quickstart cards.
 const STARTS = {
-	"isekai-god": {
-		label: "Thrown in by a god, an eldritch thing, or a wizard",
-		tickets: [{ star: 4, n: 1 }, { star: 3, n: 2 }]
-	},
-	"isekai-truck": {
-		label: "A new world, no wizard involved",
-		tickets: [{ star: 3, n: 2 }, { star: 1, n: 3 }]
-	},
-	"native": {
-		label: "Native to the world you chose",
-		tickets: [{ star: 3, n: 3 }]
-	},
-	"transmigration": {
-		label: "You woke up as an existing character",
-		roles: {
-			protagonist: { label: "the lead", tickets: [{ star: 1, n: 1 }] },
-			secondary: { label: "a secondary character", tickets: [{ star: 2, n: 2 }] },
-			tertiary: { label: "a bit part", tickets: [{ star: 3, n: 3 }] }
-		}
-	},
-	"random": {
-		label: "Someone in that world finds the key",
-		roles: {
-			plot: { label: "someone the plot cares about", tickets: [{ star: 2, n: 2 }] },
-			side: { label: "someone it doesn't", tickets: [{ star: 3, n: 3 }] }
-		}
-	}
+	inherited: { label: "Inherited", tickets: [{ star: 3, n: 2 }, { star: 2, n: 1 }] },
+	chosen: { label: "Chosen at random", tickets: [{ star: 4, n: 1 }, { star: 2, n: 1 }, { star: 1, n: 1 }] },
+	stolen: { label: "Stolen", tickets: [{ star: 2, n: 3 }, { star: 1, n: 2 }] },
+	sent: { label: "Sent", tickets: [{ star: 4, n: 1 }, { star: 3, n: 1 }] },
+	died: { label: "Died", tickets: [{ star: 3, n: 3 }] },
 }
 
 const EX_STAR = 8
@@ -79,31 +56,15 @@ class quickstart {
 		const output = $("qsCurseCountOut")
 		slider.addEventListener("input", () => { output.textContent = slider.value })
 
-		// changing a role <select> should also select the start option it sits in,
-		// and clicking it must not bubble to the <label> (which would re-toggle the radio)
-		for (let id of ["qsTransmigrationRole", "qsRandomRole"]) {
-			const select = $(id)
-			select.addEventListener("change", () => {
-				select.closest(".start-option").querySelector("input[type=radio]").checked = true
-			})
-			select.addEventListener("click", e => e.stopPropagation())
-		}
-
 		$("qsRollButton").addEventListener("click", () => this.roll())
 		$("qsRerollButton").addEventListener("click", () => this.roll())
 		$("qsSaveAllButton").addEventListener("click", (e) => this.#saveAll(e.currentTarget))
 	}
 
-	/** the checked start option, with its role sub-choice folded in -> { label, tickets } */
+	/** the checked way in -> { label, tickets } */
 	#selectedStart() {
 		const input = document.querySelector("input[name=qsStart]:checked")
-		const key = input ? input.value : "isekai-god"
-		const start = STARTS[key]
-		if (!start.roles) return { label: start.label, tickets: start.tickets }
-
-		const roleSelect = key === "transmigration" ? $("qsTransmigrationRole") : $("qsRandomRole")
-		const role = start.roles[roleSelect.value] || Object.values(start.roles)[0]
-		return { label: `${start.label} (${role.label})`, tickets: role.tickets }
+		return STARTS[input ? input.value : "inherited"] || STARTS.inherited
 	}
 
 	/** do the whole roll, then render it and report it to pageHandler */
@@ -168,7 +129,7 @@ class quickstart {
 		startLine.className = "qs-summary-line"
 		const startLabel = document.createElement("span")
 		startLabel.className = "dim"
-		startLabel.textContent = "Start: "
+		startLabel.textContent = "Way in: "
 		const startName = document.createElement("strong")
 		startName.textContent = start.label
 		startLine.append(startLabel, startName)
@@ -245,7 +206,7 @@ class quickstart {
 		this.#deps.onSaveAll(this.#lastRoll.items, this.#lastRoll.curses)
 		button.disabled = true
 		button.textContent = "Kept"
-		for (let b of document.querySelectorAll("#qsResults .rc-actions .default")) {
+		for (let b of document.querySelectorAll("#qsResults .rc-actions .primary")) {
 			b.disabled = true
 			b.textContent = "Kept"
 		}
