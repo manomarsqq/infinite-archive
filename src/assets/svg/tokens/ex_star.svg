@@ -1,13 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
 <defs>
- <radialGradient id="face" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#EDE9FE"/><stop offset="1" stop-color="#A78BFA"/></radialGradient>
- <linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1B8"/><stop offset="0.5" stop-color="#7C3AED"/><stop offset="1" stop-color="#7A5A12"/></linearGradient>
- <linearGradient id="starfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A7F3D0"/><stop offset="1" stop-color="#34D399"/></linearGradient>
- <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C4B5FD"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
-</defs>
-<circle cx="128" cy="128" r="124" fill="url(#ringg)"/>
-<circle cx="128" cy="128" r="104" fill="url(#face)" stroke="#9A7420" stroke-width="3"/>
-<circle cx="128" cy="128" r="96" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="6 10"/>
-<polygon points="128,48 196,128 128,208 60,128" fill="url(#gem)" stroke="#5B2E8A" stroke-width="6"/><polygon points="128,48 196,128 128,128" fill="#FFFFFF" opacity="0.35"/><text x="128" y="150" text-anchor="middle" font-family="Trebuchet MS, Arial, sans-serif" font-weight="900" font-size="56" fill="#FFFFFF">EX</text>
-<ellipse cx="88" cy="70" rx="34" ry="16" fill="#FFFFFF" opacity="0.35" transform="rotate(-30 88 70)"/>
+ <radialGradient id="through" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.45" stop-color="#FFF4C2"/><stop offset="1" stop-color="#FFD166"/></radialGradient>
+ <clipPath id="keyclip"><path d="M128 22 a44 44 0 1 0 0.01 0 Z M128 44 a22 22 0 1 1 -0.01 0 Z M116 104 h24 v96 h18 v16 h-18 v8 h14 v16 h-14 v8 h-24 Z" fill-rule="evenodd"/></clipPath>
+ <filter id="bloom" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="10"/></filter>
+ <filter id="edge" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5"/></filter></defs>
+<!-- the light spilling out of the gap -->
+<g filter="url(#bloom)" opacity="0.7"><path d="M128 22 a44 44 0 1 0 0.01 0 Z M128 44 a22 22 0 1 1 -0.01 0 Z M116 104 h24 v96 h18 v16 h-18 v8 h14 v16 h-14 v8 h-24 Z" fill-rule="evenodd" fill="#FFE9A0"/></g>
+<!-- the air bends a little at the rim -->
+<g filter="url(#edge)"><path d="M128 22 a44 44 0 1 0 0.01 0 Z M128 44 a22 22 0 1 1 -0.01 0 Z M116 104 h24 v96 h18 v16 h-18 v8 h14 v16 h-14 v8 h-24 Z" fill-rule="evenodd" fill="none" stroke="#1A1428" stroke-opacity="0.55" stroke-width="7"/></g>
+<!-- the hole itself: whatever is on the other side -->
+<g clip-path="url(#keyclip)">
+ <rect x="0" y="0" width="256" height="256" fill="url(#through)"/>
+ <ellipse cx="110" cy="80" rx="40" ry="60" fill="#FFFFFF" opacity="0.55">
+  <animate attributeName="cx" values="110;150;110" dur="11s" repeatCount="indefinite"/>
+ </ellipse>
+</g>
 </svg>

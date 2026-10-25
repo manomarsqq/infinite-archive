@@ -1149,6 +1149,9 @@ table.dataTable td.cell-num { text-align: right; font-variant-numeric: tabular-n
     cursor: pointer;
 }
 .token-pick img { width: 48px; height: 48px; }
+.token-pick span { line-height: 1.15; }
+.token-pick small { display: block; font-size: 10px; color: var(--text-dim); }
+.def-list dd strong { margin-right: 0.2em; }
 .token-pick:hover { background: var(--xp-row-hover); border-color: var(--xp-blue); }
 .token-pick[aria-pressed="true"] { background: var(--xp-blue); color: #FFFFFF; border-color: var(--xp-border); }
 .ball-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 8px; }
