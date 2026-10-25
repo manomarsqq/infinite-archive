@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+ <radialGradient id="face" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#F6E7B2"/><stop offset="1" stop-color="#D9B65A"/></radialGradient>
+ <linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1B8"/><stop offset="0.5" stop-color="#C99A2E"/><stop offset="1" stop-color="#7A5A12"/></linearGradient>
+ <linearGradient id="starfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A7F3D0"/><stop offset="1" stop-color="#34D399"/></linearGradient>
+ <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C4B5FD"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
+</defs>
+<circle cx="128" cy="128" r="124" fill="url(#ringg)"/>
+<circle cx="128" cy="128" r="104" fill="url(#face)" stroke="#9A7420" stroke-width="3"/>
+<circle cx="128" cy="128" r="96" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="6 10"/>
+<polygon points="128.0,44.0 134.3,59.3 150.8,60.6 138.3,71.3 142.1,87.4 128.0,78.8 113.9,87.4 117.7,71.3 105.2,60.6 121.7,59.3" fill="url(#starfill)" stroke="#1E5A3C" stroke-width="3" stroke-linejoin="round"/><polygon points="180.0,74.0 186.3,89.3 202.8,90.6 190.2,101.3 194.1,117.4 180.0,108.8 165.9,117.4 169.7,101.3 157.1,90.6 173.6,89.3" fill="url(#starfill)" stroke="#1E5A3C" stroke-width="3" stroke-linejoin="round"/><polygon points="180.0,134.0 186.3,149.3 202.8,150.6 190.2,161.3 194.1,177.4 180.0,168.8 165.9,177.4 169.7,161.3 157.1,150.6 173.6,149.3" fill="url(#starfill)" stroke="#1E5A3C" stroke-width="3" stroke-linejoin="round"/><polygon points="128.0,164.0 134.3,179.3 150.8,180.6 138.3,191.3 142.1,207.4 128.0,198.8 113.9,207.4 117.7,191.3 105.2,180.6 121.7,179.3" fill="url(#starfill)" stroke="#1E5A3C" stroke-width="3" stroke-linejoin="round"/><polygon points="76.0,134.0 82.4,149.3 98.9,150.6 86.3,161.3 90.1,177.4 76.0,168.8 61.9,177.4 65.8,161.3 53.2,150.6 69.7,149.3" fill="url(#starfill)" stroke="#1E5A3C" stroke-width="3" stroke-linejoin="round"/><polygon points="76.0,74.0 82.4,89.3 98.9,90.6 86.3,101.3 90.1,117.4 76.0,108.8 61.9,117.4 65.8,101.3 53.2,90.6 69.7,89.3" fill="url(#starfill)" stroke="#1E5A3C" stroke-width="3" stroke-linejoin="round"/>
+<ellipse cx="88" cy="70" rx="34" ry="16" fill="#FFFFFF" opacity="0.35" transform="rotate(-30 88 70)"/>
+</svg>

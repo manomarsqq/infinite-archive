@@ -1,0 +1,7 @@
+.vscode/
+.claude/
+.env
+node_modules/
+src/data/values.json
+dist/
+review/

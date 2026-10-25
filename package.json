@@ -1,0 +1,23 @@
+{
+  "name": "infinite-archive",
+  "version": "1.0.0",
+  "description": "Infinite Archive: draw scrolls of power, bind curses, build a character for your story",
+  "license": "GPL-3.0",
+  "author": "",
+  "type": "commonjs",
+  "main": "",
+  "scripts": {
+    "test": "vitest",
+    "dev": "vite --port 4000",
+    "viteBuild": "vite build",
+    "getData": "node build.js",
+    "start": "npm run getData && npm run viteBuild"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  }
+}
