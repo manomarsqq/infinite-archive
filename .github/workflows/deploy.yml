@@ -1,5 +1,5 @@
 # Build the site with Vite and publish it to GitHub Pages.
-# Enable Pages for the repository first: Settings -> Pages -> Source: "GitHub Actions".
+# The first run enables Pages on the repository itself (configure-pages with enablement: true).
 # Scroll data is pulled from a Google Sheet when the SHEETID and SHEETSAPIKEY secrets exist;
 # without them the site is published with the sample data.
 name: Deploy to GitHub Pages
@@ -42,6 +42,8 @@ jobs:
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true # creates the Pages site on first run, so no manual Settings step is needed
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
