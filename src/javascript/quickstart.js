@@ -16,7 +16,8 @@ export { quickstart }
  *   randomItemForTicket(star)     random item for a star level, content filter applied
  *   buildItemCard(item)           result card element (with its Save button already wired)
  *   buildCurseCard(curse)         result card element
- *   onRolled(items, curses)       called after a roll so the normal histories pick it up
+ *   onRolled(rolled, curses)      called after a roll so the ledger records it; rolled is [{ ticket: {star, source}, item }],
+ *                                 source is "start" or the name of the curse that paid the key
  *   onSaveAll(items, curses)      called by the "Save all to build" button
  *   toast(message)
  */
@@ -108,7 +109,7 @@ class quickstart {
 
 		this.#lastRoll = { items: rolled.map(r => r.item), curses: curses }
 		this.#render(start, tickets, curses, rolled, notes)
-		this.#deps.onRolled(this.#lastRoll.items, this.#lastRoll.curses)
+		this.#deps.onRolled(rolled, curses)
 	}
 
 	// "2× 3★" pill for the summary line. curse-sourced tickets are coloured differently.

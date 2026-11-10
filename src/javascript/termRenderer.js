@@ -2,6 +2,7 @@ import { gachaItem } from "./gachaItem.js"
 import { gachaCurse } from "./gachaCurse.js"
 import { filteringHandler } from "./filteringHandler.js"
 import { copyToClipboard } from "./utils.js"
+import { KEY_LABELS, keyLabel, sourceLabel } from "./ledger.js"
 
 // how the archive delivers each kind of scroll; shown as a line on every result card
 const SCROLL_INTRO = {
@@ -265,6 +266,155 @@ class termRenderer {
 		return tag
 	}
 
+	// ---------------------------------------------------------------- ledger
+
+	/**
+	 * "21:14" today, "Nov 9, 21:14" this year, "Nov 9, 2025, 21:14" before that
+	 * @param {number} ms
+	 * @returns {string}
+	 */
+	static formatWhen(ms) {
+		const date = new Date(ms)
+		const now = new Date()
+		const time = { hour: "2-digit", minute: "2-digit" }
+		if (date.toDateString() === now.toDateString()) return date.toLocaleTimeString(undefined, time)
+		const day = { month: "short", day: "numeric", ...time }
+		if (date.getFullYear() !== now.getFullYear()) day.year = "numeric"
+		return date.toLocaleString(undefined, day)
+	}
+
+	/**
+	 * one line of provenance for a card: "Drawn with 4★ Gold on the Draw page, 21:14"
+	 * @param {object} record a ledger record
+	 * @returns {string}
+	 */
+	static provenance(record) {
+		const when = termRenderer.formatWhen(record.at)
+		const source = sourceLabel(record)
+		if (record.kind === "curses") return `${source} · ${when}`
+		return `${keyLabel(record.star)} · ${source} · ${when}`
+	}
+
+	/**
+	 * thead/tbody for a ledger table
+	 * @param {HTMLTableElement} table
+	 * @param {"items"|"curses"|"all"} view
+	 */
+	static buildLedgerHeader(table, view) {
+		const labels = {
+			items: ["When", "Key", "Scroll", "Rank", "Note"],
+			curses: ["When", "Pays", "Curse", "Severity", "Note"],
+			all: ["When", "Key", "Entry", "Rank", "Note"],
+		}[view] || []
+		const row = document.createElement("tr")
+		for (let label of labels) row.appendChild(termRenderer.element("th", "", label))
+		row.appendChild(termRenderer.element("th", "action-col", ""))
+		const thead = document.createElement("thead")
+		thead.appendChild(row)
+		table.textContent = ""
+		table.append(thead, document.createElement("tbody"))
+	}
+
+	/**
+	 * a ledger row: when, the key (a picker for scrolls, the payout for curses), the entry, its grade,
+	 * an editable note, and keep / forget buttons. the row opens the entry on click outside the controls.
+	 * @param {object} record a ledger record
+	 * @param {gachaItem|gachaCurse|undefined} term the entry, undefined when it is no longer in the data
+	 * @param {{
+	 *   view: "items"|"curses"|"all",
+	 *   onOpen?: () => void,
+	 *   onKey?: (star: number|null) => void,
+	 *   onNote?: (note: string) => void,
+	 *   onKeep?: () => void,
+	 *   onForget?: () => void
+	 * }} options
+	 * @returns {HTMLTableRowElement}
+	 */
+	static buildLedgerRow(record, term, options) {
+		const row = document.createElement("tr")
+		const isItem = record.kind === "items"
+		row.classList.toggle("is-kept", record.kept)
+
+		// when
+		const time = termRenderer.element("time", "", termRenderer.formatWhen(record.at))
+		time.dateTime = new Date(record.at).toISOString()
+		time.title = new Date(record.at).toLocaleString()
+		row.appendChild(termRenderer.cell(time, "cell-when"))
+
+		// key, or what a curse pays
+		const keyCell = termRenderer.cell("", "cell-key")
+		if (isItem) {
+			const select = termRenderer.element("select", "key-select")
+			select.setAttribute("aria-label", `Key for ${record.name}`)
+			select.appendChild(new Option("Key not set", ""))
+			KEY_LABELS.forEach((label, star) => select.appendChild(new Option(label, String(star))))
+			select.value = record.star === null ? "" : String(record.star)
+			select.classList.toggle("unset", record.star === null)
+			select.addEventListener("change", () => {
+				const star = select.value === "" ? null : Number(select.value)
+				select.classList.toggle("unset", star === null)
+				if (options.onKey) options.onKey(star)
+			})
+			keyCell.appendChild(select)
+		} else {
+			keyCell.appendChild(term ? termRenderer.rewardChip(term) : termRenderer.element("span", "dim", "–"))
+		}
+		keyCell.appendChild(termRenderer.element("span", "cell-sub", sourceLabel(record)))
+		row.appendChild(keyCell)
+
+		// the entry
+		const name = termRenderer.cell(record.name, "cell-name")
+		let sub = term ? (isItem ? term.get("series") : `Target: ${term.get("target")}`) : "No longer in the archive"
+		if (options.view === "all") sub = (isItem ? "Scroll" : "Curse") + (sub ? ` · ${sub}` : "")
+		if (sub) name.appendChild(termRenderer.element("span", "cell-sub", sub))
+		row.appendChild(name)
+
+		// rank or severity
+		let grade
+		if (!term) grade = termRenderer.element("span", "dim", "?")
+		else grade = isItem ? termRenderer.rankBadge(term.get("rank")) : termRenderer.severityBadge(term)
+		row.appendChild(termRenderer.cell(grade, isItem ? "cell-center" : ""))
+
+		// note
+		const note = termRenderer.element("input", "note-input")
+		note.type = "text"
+		note.value = record.note
+		note.placeholder = isItem ? "What earned the key?" : "Why it was bound"
+		note.setAttribute("aria-label", `Note for ${record.name}`)
+		note.addEventListener("change", () => { if (options.onNote) options.onNote(note.value) })
+		note.addEventListener("keydown", (event) => { if (event.key === "Enter") note.blur() })
+		row.appendChild(termRenderer.cell(note, "cell-note"))
+
+		// keep / kept, forget
+		const actions = termRenderer.cell("", "cell-action")
+		const wrap = termRenderer.element("div", "row-actions")
+		if (record.kept) {
+			wrap.appendChild(termRenderer.element("span", "kept-tag", isItem ? "Kept" : "Bound"))
+		} else if (term && options.onKeep) {
+			const keep = termRenderer.element("button", "btn small", isItem ? "Keep" : "Bind")
+			keep.addEventListener("click", options.onKeep)
+			wrap.appendChild(keep)
+		}
+		if (options.onForget) {
+			const forget = termRenderer.element("button", "btn small ghost forget", "✕")
+			forget.title = "Forget this draw"
+			forget.setAttribute("aria-label", `Forget the draw of ${record.name}`)
+			forget.addEventListener("click", options.onForget)
+			wrap.appendChild(forget)
+		}
+		actions.appendChild(wrap)
+		row.appendChild(actions)
+
+		if (term && typeof options.onOpen === "function") {
+			row.classList.add("openable")
+			row.addEventListener("click", (event) => {
+				if (event.target.closest("button, a, input, select")) return
+				options.onOpen()
+			})
+		}
+		return row
+	}
+
 	// ---------------------------------------------------------------- cards
 
 	/** accent colour per curse severity, used for the card edge and the reveal burst */
@@ -314,7 +464,8 @@ class termRenderer {
 	 * result card for an item: title with category and series, rank seal, flavour line, description,
 	 * stat grid, modifier chips.
 	 * @param {gachaItem} item
-	 * @param {{onSave?: (item: gachaItem) => void, actions?: boolean}} options onSave adds a Keep button;
+	 * @param {{onSave?: (item: gachaItem) => void, actions?: boolean, footnote?: string}} options onSave adds a Keep button;
+	 *   footnote is a provenance line under the chips;
 	 *   either one adds the action row (actions alone gives just Copy)
 	 * @returns {HTMLElement}
 	 */
@@ -362,6 +513,7 @@ class termRenderer {
 		if (tags.length) mods.appendChild(termRenderer.chip(tags.join(" · "), "dim"))
 
 		card.append(top, intro, desc, stats, mods)
+		if (options.footnote) card.appendChild(termRenderer.element("p", "rc-foot", options.footnote))
 		if (options.onSave || options.actions) card.appendChild(termRenderer.cardActions(item, options.onSave))
 		return card
 	}
@@ -370,7 +522,7 @@ class termRenderer {
 	 * result card for a curse: severity, title, target/affects chips, description, resolution, and the
 	 * keys it pays out as key tokens.
 	 * @param {gachaCurse} curse
-	 * @param {{onSave?: (curse: gachaCurse) => void, actions?: boolean}} options
+	 * @param {{onSave?: (curse: gachaCurse) => void, actions?: boolean, footnote?: string}} options
 	 * @returns {HTMLElement}
 	 */
 	static buildCurseCard(curse, options = {}) {
@@ -414,6 +566,7 @@ class termRenderer {
 		reward.appendChild(keys)
 
 		card.append(top, desc, res, reward)
+		if (options.footnote) card.appendChild(termRenderer.element("p", "rc-foot", options.footnote))
 		if (options.onSave || options.actions) card.appendChild(termRenderer.cardActions(curse, options.onSave))
 		return card
 	}

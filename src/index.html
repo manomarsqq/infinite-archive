@@ -243,23 +243,22 @@
 
                     <section class="panel table-group for-items">
                         <header class="panel-head">
-                            <h2>Drawn this session <span class="count" data-count-for="itemRollHistoryTable">0</span></h2>
-                            <span class="dim">Select a row to see the whole scroll</span>
+                            <h2>Ledger <span class="count" data-count-for="itemLedgerTable">0</span></h2>
+                            <span class="dim">Scrolls drawn for <strong class="current-build-name">default</strong>. Change a key or add a note on any row.</span>
                         </header>
                         <div class="table-wrap">
-                            <!-- every table.dataTable gets its header from termRenderer.buildTableHeader():
-                                 data-kind picks items or curses, data-columns="compact" the short column set,
-                                 data-extra adds a trailing button column -->
-                            <table id="itemRollHistoryTable" class="dataTable itemsTable historyTable" data-kind="items" data-columns="compact" data-extra="Keep"></table>
+                            <!-- every table.ledgerTable gets its header from termRenderer.buildLedgerHeader(), data-view picks
+                                 items, curses, or all; pageHandler.redrawLedgers() fills it from the ledger (ledger.js) -->
+                            <table id="itemLedgerTable" class="ledgerTable" data-view="items" data-empty="No scrolls drawn for this codex yet."></table>
                         </div>
                     </section>
                     <section class="panel table-group for-curses">
                         <header class="panel-head">
-                            <h2>Read this session <span class="count" data-count-for="curseRollHistoryTable">0</span></h2>
-                            <span class="dim">Select a row to see the whole page</span>
+                            <h2>Ledger <span class="count" data-count-for="curseLedgerTable">0</span></h2>
+                            <span class="dim">Curses read for <strong class="current-build-name">default</strong>. Add a note on any row.</span>
                         </header>
                         <div class="table-wrap">
-                            <table id="curseRollHistoryTable" class="dataTable cursesTable historyTable" data-kind="curses" data-columns="compact" data-extra="Bind"></table>
+                            <table id="curseLedgerTable" class="ledgerTable" data-view="curses" data-empty="No curses read for this codex yet."></table>
                         </div>
                     </section>
                 </div>
@@ -407,6 +406,27 @@
                     <table id="buildCursesTable" class="dataTable cursesTable saveTable" data-kind="curses" data-columns="compact" data-extra="Remove"></table>
                 </div>
             </section>
+
+            <section class="panel table-group ledger-panel" id="codexLedger">
+                <header class="panel-head">
+                    <div>
+                        <h2>Ledger <span class="count" data-count-for="codexLedgerTable">0</span></h2>
+                        <p class="dim">Every draw made for this codex: when, with which key, and from where. Set the key a draw came from and note what earned it.</p>
+                    </div>
+                    <div class="ledger-tools">
+                        <div class="seg" role="group" aria-label="Show">
+                            <button data-ledger-view="all" aria-pressed="true">All</button>
+                            <button data-ledger-view="items" aria-pressed="false">Scrolls</button>
+                            <button data-ledger-view="curses" aria-pressed="false">Curses</button>
+                        </div>
+                        <label class="switch-row small"><input id="ledgerKeptOnly" type="checkbox" class="switch"><span>Kept only</span></label>
+                        <button id="ledgerClearButton" class="btn small ghost danger">Forget unkept draws</button>
+                    </div>
+                </header>
+                <div class="table-wrap tall">
+                    <table id="codexLedgerTable" class="ledgerTable" data-view="all" data-empty="Nothing in the ledger yet. Draws on the Draw and Quickstart pages land here."></table>
+                </div>
+            </section>
         </section>
 
         <!-- ================= CATALOGUE (search) ================= -->
@@ -512,6 +532,10 @@
                             reaches: each level draws from three neighbouring ranks of scroll. Keys are not given, they are
                             earned by deeds in your story. Decide what your character did, decide how big it was, and the
                             archive hands over the matching key. Putting the darkest key next to the humblest one is deliberate.</p>
+                        <p>Every draw lands in the codex's ledger with the key it was drawn with and the time. If you drew
+                            without a key, or the key came from somewhere else, set it there afterwards and write down what
+                            earned it. The ledger is on the <button class="link" data-tab="build">Codex</button> page, and
+                            each Draw page has its own.</p>
                         <div class="key-list">
                             <div class="key-row"><img src="/assets/svg/tokens/1_star.svg" alt=""><div><h4>Iron <span class="tag">1★ · F–D</span></h4><p>Black, matte, a little worn. A hard day's work: anything a determined person can finish with effort and no help.</p></div></div>
                             <div class="key-row"><img src="/assets/svg/tokens/2_star.svg" alt=""><div><h4>Silver <span class="tag">2★ · E–C</span></h4><p>Beyond most people: a feat the town talks about for a week.</p></div></div>

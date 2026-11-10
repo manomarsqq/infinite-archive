@@ -239,6 +239,27 @@ class filteringHandler {
 		return Array.from(this.#data.filtered[term])
 	}
 
+	/** name -> entry, per kind, built on first lookup */
+	#byName = null
+
+	/**
+	 * the entry with this name in the full data (content filter not applied), for the ledger
+	 * @param {"items"|"curses"} term
+	 * @param {string} name
+	 * @returns {gachaItem|gachaCurse|undefined}
+	 */
+	findByName(term, name) {
+		if (!this.#byName) {
+			this.#byName = { items: new Map(), curses: new Map() }
+			for (let kind of ["items", "curses"]) {
+				for (let entry of this.#data.raw[kind]) {
+					if (!this.#byName[kind].has(entry.get("name"))) this.#byName[kind].set(entry.get("name"), entry)
+				}
+			}
+		}
+		return this.#byName[term === "curses" ? "curses" : "items"].get(name)
+	}
+
 	/**
 	 * random item for a given ticket star level, from the content-filtered data
 	 * @param {number} starLevel 1-8

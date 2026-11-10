@@ -5,12 +5,15 @@ import { gachaItem } from "./gachaItem";
 import { termRenderer } from "./termRenderer";
 import { gachaReveal } from "./gachaReveal";
 import { quickstart } from "./quickstart";
+import { ledger, keyLabel, sourceLabel } from "./ledger";
 import { toast } from "./utils";
 
 export { pageHandler }
 
 // rows rendered at most in search results, keeps the DOM sane with ~5600 items
 const MAX_SEARCH_ROWS = 500
+// rows rendered at most in a ledger table
+const MAX_LEDGER_ROWS = 300
 
 // localStorage key for the character sheets (one per codex); cookies are too small for a portrait
 const PROFILES_KEY = "infiniteArchive.profiles"
@@ -55,16 +58,11 @@ class pageHandler {
 	/**@type {quickstart} */
 	#quickstart
 
-	/**
-	 * @type {{
-	 * 	items: gachaItem[],
-	 * 	curses: gachaCurse[]
-	 * }}
-	 */
-	#history = {
-		items: [],
-		curses: []
-	}
+	/** every draw per codex, with its key and time (see ledger.js) */
+	#ledger = new ledger()
+
+	/** what the Codex page ledger shows */
+	#ledgerFilter = { view: "all", keptOnly: false }
 
 	/** @type {{ items: gachaItem[], curses: gachaCurse[] }} last search results, kept for sorting */
 	#searchResults = {
@@ -112,14 +110,28 @@ class pageHandler {
 			randomItemForTicket: (star) => this.#filteringHandler.getRandomItemForTicket(star),
 			buildItemCard: (item) => termRenderer.buildItemCard(item, { onSave: (i) => this.saveTerm("items", i) }),
 			buildCurseCard: (curse) => termRenderer.buildCurseCard(curse, { onSave: (c) => this.saveTerm("curses", c) }),
-			onRolled: (items, curses) => {
-				this.#history.items.unshift(...items)
-				this.#history.curses.unshift(...curses)
-				this.redrawHistoryTables()
+			onRolled: (rolled, curses) => {
+				// stored oldest first, shown newest first: curses, then the scrolls reversed, so the ledger
+				// lists the scrolls highest key first (as the Quickstart page does) above the curses
+				const at = Date.now()
+				this.#record([
+					...curses.map(curse => ({ kind: "curses", name: curse.get("name"), source: "quickstart", at })),
+					...rolled.slice().reverse().map(r => ({
+						kind: "items",
+						name: r.item.get("name"),
+						star: r.ticket.star,
+						source: r.ticket.source === "start" ? "start" : "curse",
+						from: r.ticket.source === "start" ? "" : r.ticket.source,
+						at,
+					})),
+				])
+				this.redrawLedgers()
 			},
 			onSaveAll: (items, curses) => {
 				this.#buildsOptions.saveTerms("items", items)
 				this.#buildsOptions.saveTerms("curses", curses)
+				for (let item of items) this.#recordKept("items", item)
+				for (let curse of curses) this.#recordKept("curses", curse)
 				this.redrawAllSaveTables()
 				toast(`Kept ${items.length} scrolls and ${curses.length} curses in codex "${this.#buildsOptions.getCurrentBuildKey()}"`)
 			},
@@ -135,12 +147,14 @@ class pageHandler {
 		for (let table of document.querySelectorAll("table.dataTable")) {
 			termRenderer.buildTableHeader(table, table.dataset.kind, table.dataset.extra, table.dataset.columns === "compact")
 		}
+		for (let table of document.querySelectorAll("table.ledgerTable")) {
+			termRenderer.buildLedgerHeader(table, table.dataset.view)
+		}
 		this.createAllSortButtons()
 		this.applyAllOptions()
 		this.setTicket(0)
 		this.setDrawMode("items")
 		this.redrawAllSaveTables()
-		this.redrawHistoryTables()
 		this.#quickstart.init()
 		this.loadProfile()
 		this.changeTabTo(location.hash.replace("#", "") || "home")
@@ -165,9 +179,10 @@ class pageHandler {
 	 * show the full card for one entry in the detail dialog
 	 * @param {gachaItem|gachaCurse} term
 	 * @param {(term) => void} [onSave] adds a Keep / Bind button
+	 * @param {string} [footnote] provenance line (key, source, time)
 	 */
-	showDetails(term, onSave) {
-		const options = { onSave, actions: true }
+	showDetails(term, onSave, footnote) {
+		const options = { onSave, actions: true, footnote }
 		const card = term instanceof gachaItem ? termRenderer.buildItemCard(term, options) : termRenderer.buildCurseCard(term, options)
 		document.getElementById("detailSlot").replaceChildren(card)
 		const dialog = document.getElementById("detailDialog")
@@ -499,8 +514,9 @@ class pageHandler {
 	*/
 	deleteCurrentBuildListener(){
 		const currentBuild = this.#buildsOptions.getOption("build")
-		if (confirm(`Delete codex "${currentBuild}" and everything kept in it?`)) {
+		if (confirm(`Delete codex "${currentBuild}", everything kept in it, and its ledger?`)) {
 			this.#buildsOptions.deleteBuild(currentBuild)
+			this.#ledger.deleteCodex(currentBuild)
 			this.populateBuildSelector()
 			this.redrawAllSaveTables()
 			toast(`Deleted codex "${currentBuild}"`)
@@ -515,6 +531,7 @@ class pageHandler {
 	saveTerm(term, value) {
 		if (!value) return
 		this.#buildsOptions.saveTerm(term, value)
+		this.#recordKept(term, value)
 		this.redrawAllSaveTables(term)
 		toast(`${term === "items" ? "Kept" : "Bound"} "${value.get("name")}" in codex "${this.#buildsOptions.getCurrentBuildKey()}"`)
 	}
@@ -642,13 +659,114 @@ class pageHandler {
 		}
 	}
 
-	/** both roll history tables */
-	redrawHistoryTables() {
-		for (let term of ["items", "curses"]) {
-			const table = document.querySelector(`.historyTable.${term}Table`)
-			const save = (i) => this.saveTerm(term, this.#history[term][i])
-			this.#redrawTableWithButton(table, this.#history[term], term === "items" ? "Keep" : "Bind", "", save, { detailSave: save })
+	// ---------------------------------------------------------------- ledger
+
+	/**
+	 * store draws in the current codex's ledger
+	 * @param {object[]} entries
+	 * @returns {object[]} the records
+	 */
+	#record(entries) {
+		return this.#ledger.addMany(this.#buildsOptions.getCurrentBuildKey(), entries)
+	}
+
+	/**
+	 * something was kept in the codex: mark the draw it came from, or log it as a Catalogue pick
+	 * when no draw of that name is waiting (kept from search, or kept twice)
+	 * @param {"items"|"curses"} term
+	 * @param {gachaItem|gachaCurse} value
+	 */
+	#recordKept(term, value) {
+		const codex = this.#buildsOptions.getCurrentBuildKey()
+		if (!this.#ledger.markKept(codex, term, value.get("name"))) {
+			this.#ledger.add(codex, { kind: term, name: value.get("name"), star: null, source: "catalogue", kept: true })
 		}
+	}
+
+	/**
+	 * fill one ledger table
+	 * @param {HTMLTableElement} table
+	 * @param {object[]} records newest first
+	 * @param {{forget?: boolean}} [options] forget adds a button that drops the record
+	 */
+	#redrawLedgerTable(table, records, options = {}) {
+		const codex = this.#buildsOptions.getCurrentBuildKey()
+		const view = table.dataset.view
+		const limit = Math.min(MAX_LEDGER_ROWS, records.length)
+		const rows = []
+		for (let i = 0; i < limit; i++) {
+			const record = records[i]
+			const term = this.#filteringHandler.findByName(record.kind, record.name)
+			rows.push(termRenderer.buildLedgerRow(record, term, {
+				view,
+				onOpen: () => this.showDetails(term, record.kept ? undefined : () => this.saveTerm(record.kind, term), termRenderer.provenance(record)),
+				onKey: (star) => this.#updateRecord(codex, record.id, { star }),
+				onNote: (note) => this.#updateRecord(codex, record.id, { note }),
+				onKeep: () => this.saveTerm(record.kind, term),
+				onForget: options.forget ? () => { this.#ledger.remove(codex, record.id); this.redrawLedgers() } : undefined,
+			}))
+		}
+		this.#redrawTableBody(table, rows)
+		this.#updateCount(table.id, records.length)
+		this.#updateTruncationNote(table, limit, records.length)
+	}
+
+	/**
+	 * save a key or note change; the other ledger tables show the same record, so redraw them
+	 * (not the one being typed in, which already shows the change)
+	 */
+	#updateRecord(codex, id, patch) {
+		if (!this.#ledger.update(codex, id, patch)) {
+			toast("Could not save that change. This browser's storage may be full.", "Ledger")
+			return
+		}
+		this.redrawLedgers({ skipFocused: true })
+	}
+
+	/**
+	 * the Draw page ledgers (one per kind) and the Codex page ledger
+	 * @param {{skipFocused?: boolean}} [options] leave alone the table that holds keyboard focus
+	 */
+	redrawLedgers(options = {}) {
+		const codex = this.#buildsOptions.getCurrentBuildKey()
+		const focused = options.skipFocused ? document.activeElement && document.activeElement.closest("table.ledgerTable") : null
+		for (let table of document.querySelectorAll("table.ledgerTable")) {
+			if (table === focused) continue
+			if (table.id === "codexLedgerTable") {
+				const { view, keptOnly } = this.#ledgerFilter
+				let records = this.#ledger.entries(codex, view === "all" ? undefined : view)
+				if (keptOnly) records = records.filter(r => r.kept)
+				this.#redrawLedgerTable(table, records, { forget: true })
+			} else {
+				this.#redrawLedgerTable(table, this.#ledger.entries(codex, table.dataset.view))
+			}
+		}
+	}
+
+	/**
+	 * the Codex ledger's filter
+	 * @param {{view?: "all"|"items"|"curses", keptOnly?: boolean}} patch
+	 */
+	setLedgerFilter(patch) {
+		Object.assign(this.#ledgerFilter, patch)
+		for (let button of document.querySelectorAll("[data-ledger-view]")) {
+			button.setAttribute("aria-pressed", button.dataset.ledgerView === this.#ledgerFilter.view)
+		}
+		const table = document.getElementById("codexLedgerTable")
+		table.dataset.view = this.#ledgerFilter.view
+		termRenderer.buildLedgerHeader(table, this.#ledgerFilter.view)
+		this.redrawLedgers()
+	}
+
+	/** drop every draw that was not kept, after asking */
+	clearUnkeptLedger() {
+		const codex = this.#buildsOptions.getCurrentBuildKey()
+		const waiting = this.#ledger.entries(codex).filter(r => !r.kept).length
+		if (!waiting) { toast("Every draw in this ledger was kept", "Ledger"); return }
+		if (!confirm(`Forget ${waiting} draw${waiting === 1 ? "" : "s"} that ${waiting === 1 ? "was" : "were"} not kept? Kept entries stay.`)) return
+		this.#ledger.clearUnkept(codex)
+		this.redrawLedgers()
+		toast(`Forgot ${waiting} draw${waiting === 1 ? "" : "s"}`, "Ledger")
 	}
 
 	/**
@@ -662,12 +780,14 @@ class pageHandler {
 			const saved = this.#buildsOptions.getCurrentSaved(t)
 			for(let table of document.querySelectorAll(`.saveTable.${t}Table`)){
 				this.#redrawTableWithButton(table, saved, "Remove", "ghost danger", (i) => {
-					this.#buildsOptions.removeCurrentSaved(t, i)
+					const removed = this.#buildsOptions.removeCurrentSaved(t, i)
+					if (removed) this.#ledger.unmarkKept(this.#buildsOptions.getCurrentBuildKey(), t, removed.get("name"))
 					this.redrawAllSaveTables(t)
 				})
 			}
 		}
 		this.#updateBuildLabels()
+		this.redrawLedgers()
 	}
 
 	/** a search results table from the stored results */
@@ -732,8 +852,6 @@ class pageHandler {
 	 */
 	createAllSortButtons() {
 		const registry = {
-			itemRollHistoryTable: { array: () => this.#history.items, redraw: () => this.redrawHistoryTables() },
-			curseRollHistoryTable: { array: () => this.#history.curses, redraw: () => this.redrawHistoryTables() },
 			buildItemsTable: { saved: "items" },
 			buildCursesTable: { saved: "curses" },
 			searchItemsTable: { array: () => this.#searchResults.items, redraw: () => this.redrawSearchTable("items") },
@@ -786,6 +904,19 @@ class pageHandler {
 			text += `${curse}\n\n`;
 		}
 
+		// the ledger, oldest first: when, what, which key and from where, kept or not, the note
+		const records = this.#ledger.entries(build).reverse()
+		if (records.length) {
+			text += "\n<LEDGER>\n\n";
+			for (let record of records) {
+				const when = new Date(record.at).toLocaleString()
+				const key = record.kind === "items" ? `${keyLabel(record.star)} | ` : ""
+				const what = record.kind === "items" ? "Scroll" : "Curse"
+				text += `${when} | ${what}: ${record.name} | ${key}${sourceLabel(record)}${record.kept ? " | kept" : ""}\n`
+				if (record.note) text += `    ${record.note}\n`
+			}
+		}
+
 		const link = document.createElement("a");
 		const file = new Blob([text], { type: 'text/plain' });
 		link.href = URL.createObjectURL(file)
@@ -797,7 +928,7 @@ class pageHandler {
 	// ---------------------------------------------------------------- drawing
 
 	/**
-	 * draw from the archive or the tome: pick a result, play its reveal on the stage, record it in the history.
+	 * draw from the archive or the tome: pick a result, play its reveal on the stage, record it in the ledger.
 	 * a click while a reveal is playing skips to the end.
 	 * @param {"items"|"curses"} term
 	 */
@@ -814,7 +945,7 @@ class pageHandler {
 			toast(isItem ? "No scroll within reach. Check your key, shelves, and content setting." : "No curses match your content setting.", "Nothing to draw")
 			return
 		}
-		this.#history[term].unshift(result)
+		const [record] = this.#record([{ kind: term, name: result.get("name"), star: isItem ? this.#ticket : null, source: "draw" }])
 
 		const button = document.getElementById(isItem ? "itemRollButton" : "cursesRollButton")
 		button.classList.add("rolling")
@@ -823,6 +954,7 @@ class pageHandler {
 			stage.scrollIntoView({ behavior: "smooth", block: "start" })
 		}
 		const save = (value) => this.saveTerm(term, value)
+		const cardOptions = { onSave: save, footnote: termRenderer.provenance(record) }
 
 		this.#rolling[term] = gachaReveal.stageRoll({
 			stage: stage,
@@ -830,13 +962,13 @@ class pageHandler {
 			burst: document.getElementById(isItem ? "itemBurst" : "curseBurst"),
 			cardSlot: document.getElementById(isItem ? "itemCardSlot" : "curseCardSlot"),
 			names: this.#reelNames(term),
-			card: isItem ? termRenderer.buildItemCard(result, { onSave: save }) : termRenderer.buildCurseCard(result, { onSave: save }),
+			card: isItem ? termRenderer.buildItemCard(result, cardOptions) : termRenderer.buildCurseCard(result, cardOptions),
 			color: isItem ? termRenderer.rankColor(result.get("rank")) : termRenderer.severityColor(result),
 			tier: isItem ? termRenderer.rankTier(result.get("rank")) : termRenderer.severityTier(result),
 			onOpen: () => {
 				this.#rolling[term] = null
 				button.classList.remove("rolling")
-				this.redrawHistoryTables()
+				this.redrawLedgers()
 			}
 		})
 	}

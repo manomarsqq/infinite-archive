@@ -92,6 +92,13 @@ function createAllEventHandlers(page) {
 	document.getElementById("portraitClear").addEventListener("click", () => { page.portraitClear() })
 	document.getElementById("buildExportButton").addEventListener("click", () => { page.exportSaved() })
 
+	// codex ledger: which kind, kept only, forget the rest
+	for (let button of document.querySelectorAll("[data-ledger-view]")) {
+		button.addEventListener("click", () => { page.setLedgerFilter({ view: button.dataset.ledgerView }) })
+	}
+	document.getElementById("ledgerKeptOnly").addEventListener("change", (e) => { page.setLedgerFilter({ keptOnly: e.target.checked }) })
+	document.getElementById("ledgerClearButton").addEventListener("click", () => { page.clearUnkeptLedger() })
+
 	// catalogue: forms submit on Enter or the button, the switch picks scrolls or curses
 	document.getElementById("searchItemsOptions").addEventListener("submit", (e) => { e.preventDefault(); page.searchSubmitListener(e.currentTarget, "items") })
 	document.getElementById("searchCursesOptions").addEventListener("submit", (e) => { e.preventDefault(); page.searchSubmitListener(e.currentTarget, "curses") })
