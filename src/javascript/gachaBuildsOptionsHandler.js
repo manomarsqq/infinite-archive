@@ -12,7 +12,7 @@ class gachaBuildsOptionsHandler {
 	#buildsValues = {}
 	#optionsValues = {
 		"backgroundImage": true,
-		"theme": "archive",
+		"theme": "system",
 		"build": "default",
 		"buildsArray": ["default"],
 

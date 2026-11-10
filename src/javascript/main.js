@@ -13,43 +13,61 @@ window.onload = function () {
 }
 
 /**
+ * a native <dialog> closes when the click lands on its backdrop (the dialog element itself, outside its box)
+ * @param {HTMLDialogElement} dialog
+ */
+function closeOnBackdrop(dialog) {
+	dialog.addEventListener("click", (event) => {
+		if (event.target !== dialog) return
+		const box = dialog.getBoundingClientRect()
+		const inside = event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom
+		if (!inside) dialog.close()
+	})
+}
+
+/**
  * wire every control on the page to the pageHandler. element ids live in index.html.
  * @param {pageHandler} page
  */
 function createAllEventHandlers(page) {
 
-	// tabs: index tabs, the brand mark, hero buttons, inline links, and the url hash
+	// pages: nav buttons, the brand mark, hero and card buttons, inline links, and the url hash
 	for (let button of document.querySelectorAll("[data-tab]")) {
-		button.addEventListener("click", () => { page.changeTabTo(button.dataset.tab) })
+		button.addEventListener("click", () => {
+			if (button.hasAttribute("data-close-options")) pageHandler.closeOptions()
+			page.changeTabTo(button.dataset.tab)
+		})
 	}
 	window.addEventListener("hashchange", () => { page.hashChangeListener() })
 
-	// options dialog
+	// header
+	document.getElementById("themeToggle").addEventListener("click", () => { page.toggleTheme() })
 	document.getElementById("optionsButton").addEventListener("click", () => { pageHandler.openOptions() })
+
+	// options dialog
+	const options = document.getElementById("optionsMenu")
 	document.getElementById("optionsClose").addEventListener("click", () => { pageHandler.closeOptions() })
-	document.getElementById("optionsOk").addEventListener("click", () => { pageHandler.closeOptions() })
-	document.getElementById("drawerBackdrop").addEventListener("click", () => { pageHandler.closeOptions() })
-	document.addEventListener("keydown", (e) => { if (e.key === "Escape") { pageHandler.closeOptions(); page.closePopovers() } })
-
-	document.getElementById("contentOptions").addEventListener("change", (e) => { page.contentOptionsChangeListener(e) })
-	document.getElementById("optionsBackgroundToggle").addEventListener("change", (e) => { page.backgroundImageOptionChangeListener(e) })
-	document.getElementById("optionsThemeSelector").addEventListener("change", (e) => { page.themeChangeListener(e) })
-	document.getElementById("optionsBuildSelector").addEventListener("change", (e) => { page.switchBuildEventHandler(e) })
-	document.getElementById("optionsBuildsNewName").addEventListener("keydown", (e) => { page.createNewBuildEventHandler(e) })
-	document.getElementById("optionsBuildsDeleteButton").addEventListener("click", () => { page.deleteCurrentBuildListener() })
-
-	// item machine
-	document.getElementById("itemRollButton").addEventListener("click", () => { page.roll("items") })
-	document.getElementById("saveButton").addEventListener("click", () => { page.saveLatest("items") })
-	document.getElementById("copyButton").addEventListener("click", () => { page.copyLatest("items") })
-	document.getElementById("starLvlButton").addEventListener("click", () => { page.togglePopover("starPopover") })
-	document.getElementById("categoryButton").addEventListener("click", () => { page.togglePopover("categoryPopover") })
-	document.getElementById("filtersButton").addEventListener("click", () => { pageHandler.openOptions() })
-	document.getElementById("adjustButton").addEventListener("click", () => { pageHandler.openOptions() })
-	for (let light of document.querySelectorAll(".hotspot.light")) {
-		light.addEventListener("click", () => { page.setContentMode(light.dataset.mode) })
+	closeOnBackdrop(options)
+	for (let button of document.querySelectorAll("[data-theme-choice]")) {
+		button.addEventListener("click", () => { page.setTheme(button.dataset.themeChoice) })
 	}
-	for (let button of document.querySelectorAll("#starPopover .token-pick")) {
+	document.getElementById("optionsBackgroundToggle").addEventListener("change", (e) => { page.backgroundImageOptionChangeListener(e) })
+
+	// content switches, in Options and on the Draw panel
+	for (let button of document.querySelectorAll("[data-content-mode]")) {
+		button.addEventListener("click", () => { page.setContentMode(button.dataset.contentMode) })
+	}
+
+	// detail dialog
+	const detail = document.getElementById("detailDialog")
+	document.getElementById("detailClose").addEventListener("click", () => { detail.close() })
+	closeOnBackdrop(detail)
+
+	// draw page
+	for (let button of document.querySelectorAll("[data-draw-mode]")) {
+		button.addEventListener("click", () => { page.setDrawMode(button.dataset.drawMode) })
+	}
+	for (let button of document.querySelectorAll(".key-pick")) {
 		button.addEventListener("click", () => { page.setTicket(button.dataset.star) })
 	}
 	const itemCategoriesFilters = Array.from(document.querySelectorAll("#itemsCategoryFilter input"))
@@ -58,31 +76,35 @@ function createAllEventHandlers(page) {
 		checkbox.addEventListener("change", (e) => { page.categoryFilterChangeListener(e) })
 	}
 	allCategoryBox.addEventListener("change", (e) => { page.categoryFilterAllChangeListener(e) })
-	// popovers close on a click anywhere else on the page
-	document.addEventListener("click", (e) => {
-		if (!e.target.closest(".popover, #starLvlButton, #categoryButton")) page.closePopovers()
-	})
-
-	// curse machine
+	document.getElementById("itemRollButton").addEventListener("click", () => { page.roll("items") })
 	document.getElementById("cursesRollButton").addEventListener("click", () => { page.roll("curses") })
-	document.getElementById("cursesSaveButton").addEventListener("click", () => { page.saveLatest("curses") })
 
-	// codex tab: the character sheet saves as you type, the portrait is a file input
+	// codex page: codices, the character sheet (saves as you type), the portrait file input
+	document.getElementById("codexSelector").addEventListener("change", (e) => { page.switchBuildEventHandler(e) })
+	const newName = document.getElementById("codexNewName")
+	newName.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); page.createNewBuild(newName) } })
+	document.getElementById("codexNewButton").addEventListener("click", () => { page.createNewBuild(newName) })
+	document.getElementById("codexDeleteButton").addEventListener("click", () => { page.deleteCurrentBuildListener() })
 	for (let field of document.querySelectorAll("[data-profile]")) {
 		field.addEventListener("input", (e) => { page.profileFieldListener(e) })
 	}
 	document.getElementById("portraitInput").addEventListener("change", (e) => { page.portraitChangeListener(e.target.files[0]); e.target.value = "" })
 	document.getElementById("portraitClear").addEventListener("click", () => { page.portraitClear() })
 	document.getElementById("buildExportButton").addEventListener("click", () => { page.exportSaved() })
-	document.getElementById("buildManageButton").addEventListener("click", () => { pageHandler.openOptions() })
 
-	// search: forms submit on Enter or the button, sub-tabs switch the section
+	// catalogue: forms submit on Enter or the button, the switch picks scrolls or curses
 	document.getElementById("searchItemsOptions").addEventListener("submit", (e) => { e.preventDefault(); page.searchSubmitListener(e.currentTarget, "items") })
 	document.getElementById("searchCursesOptions").addEventListener("submit", (e) => { e.preventDefault(); page.searchSubmitListener(e.currentTarget, "curses") })
 	for (let button of document.querySelectorAll("[data-search]")) {
-		button.addEventListener("click", () => {
-			for (let b of document.querySelectorAll("[data-search]")) b.classList.toggle("active", b === button)
-			for (let section of document.querySelectorAll(".searchSections")) section.classList.toggle("active", section.id === button.dataset.search)
+		button.addEventListener("click", () => { page.setSearchSection(button.dataset.search) })
+	}
+
+	// guide: contents links scroll within the page instead of changing the hash (the hash names the page)
+	for (let link of document.querySelectorAll(".guide-toc a")) {
+		link.addEventListener("click", (e) => {
+			e.preventDefault()
+			const target = document.querySelector(link.getAttribute("href"))
+			if (target) target.scrollIntoView({ behavior: "smooth", block: "start" })
 		})
 	}
 };

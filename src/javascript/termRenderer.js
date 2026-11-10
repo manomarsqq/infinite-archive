@@ -30,7 +30,7 @@ const tokens = fileMap(tokenFiles)
 
 /**
  * turns gachaItems and gachaCurses into DOM: table headers, table rows with badges,
- * result cards, and the plate shown on the curse machine.
+ * and result cards.
  * reads nothing from the page and keeps no state; pageHandler decides where things go.
  */
 class termRenderer {
@@ -131,7 +131,9 @@ class termRenderer {
 
 	/** severity pill for curses */
 	static severityBadge(curse) {
-		return termRenderer.element("span", "sev-badge sev-" + curse.severity(), curse.get("level"))
+		const badge = termRenderer.element("span", "sev-badge sev-" + curse.severity(), curse.get("level"))
+		badge.style.setProperty("--rank-color", termRenderer.severityColor(curse))
+		return badge
 	}
 
 	/** reward pill for curses */
@@ -145,69 +147,98 @@ class termRenderer {
 
 	// ---------------------------------------------------------------- tables
 
+	/** the short column set used by data-columns="compact" tables (history and codex) */
+	static compactColumns = {
+		items: ["name", "category", "rank", "stats"],
+		curses: ["name", "level", "target", "reward"],
+	}
+
+	/**
+	 * the {key, label} columns a table shows
+	 * @param {"items"|"curses"} kind
+	 * @param {boolean} [compact]
+	 */
+	static columnsFor(kind, compact) {
+		const columns = kind === "curses" ? gachaCurse.columns : gachaItem.columns
+		if (!compact) return columns
+		const keys = termRenderer.compactColumns[kind === "curses" ? "curses" : "items"]
+		return keys.map(key => columns.find(column => column.key === key))
+	}
+
 	/**
 	 * build thead/tbody for a table from the term's columns.
 	 * headers get data-key so pageHandler can sort on click.
 	 * @param {HTMLTableElement} table
 	 * @param {"items"|"curses"} kind
-	 * @param {string} [extraColumn] trailing column for a button, e.g. "Save"
+	 * @param {string} [extraColumn] trailing column for a button, e.g. "Keep"
+	 * @param {boolean} [compact] the short column set
 	 */
-	static buildTableHeader(table, kind, extraColumn) {
-		const columns = kind === "curses" ? gachaCurse.columns : gachaItem.columns
+	static buildTableHeader(table, kind, extraColumn, compact) {
 		const thead = document.createElement("thead")
 		const row = document.createElement("tr")
-		for (let column of columns) {
+		for (let column of termRenderer.columnsFor(kind, compact)) {
 			const th = termRenderer.element("th", "sortable", column.label)
 			th.dataset.key = column.key
+			if (column.key === "stats") th.classList.add("num")
 			row.appendChild(th)
 		}
-		if (extraColumn) row.appendChild(termRenderer.element("th", "", extraColumn))
+		if (extraColumn) row.appendChild(termRenderer.element("th", "action-col", ""))
 		thead.appendChild(row)
 		table.textContent = ""
+		table.classList.toggle("compact", !!compact)
 		table.append(thead, document.createElement("tbody"))
 	}
 
 	/**
 	 * a table row for an item or curse. rank, stat, boolean and severity columns get badges,
-	 * long text columns get wrapping classes, and the name cell copies the entry on click.
+	 * long text columns get wrapping classes. the whole row opens the entry (onOpen) on click or Enter.
 	 * @param {gachaItem|gachaCurse} term
+	 * @param {{compact?: boolean, onOpen?: () => void}} [options]
 	 * @returns {HTMLTableRowElement}
 	 */
-	static createRow(term) {
+	static createRow(term, options = {}) {
 		const row = document.createElement("tr")
 		const isItem = term instanceof gachaItem
+		const keys = options.compact ? termRenderer.compactColumns[isItem ? "items" : "curses"] : term.keys()
 
-		for (let key of term.keys()) {
+		for (let key of keys) {
 			const value = term.get(key)
 			let cell
-			if (isItem) {
-				if (key === "name") cell = termRenderer.cell(value, "cell-name")
-				else if (key === "series") cell = termRenderer.cell(value, "cell-text")
+			if (key === "name") {
+				cell = termRenderer.cell(value, "cell-name")
+				// compact item rows carry the series under the name instead of in a column
+				if (options.compact && isItem && term.get("series")) cell.appendChild(termRenderer.element("span", "cell-sub", term.get("series")))
+			}
+			else if (isItem) {
+				if (key === "series") cell = termRenderer.cell(value, "cell-text")
 				else if (key === "description") cell = termRenderer.cell(value, "cell-desc")
-				else if (gachaItem.statKeys.indexOf(key) !== -1) cell = termRenderer.cell(termRenderer.statLetter(value))
+				else if (key === "category") cell = termRenderer.cell(termRenderer.categoryTag(value))
+				else if (gachaItem.statKeys.indexOf(key) !== -1) cell = termRenderer.cell(termRenderer.statLetter(value), "cell-center")
 				else if (key === "stats") cell = termRenderer.cell(Number(value).toLocaleString(), "cell-num")
-				else if (key === "rank") cell = termRenderer.cell(termRenderer.rankBadge(value))
-				else if (key === "gift" || key === "nsfw") cell = termRenderer.cell(termRenderer.boolBadge(value))
+				else if (key === "rank") cell = termRenderer.cell(termRenderer.rankBadge(value), "cell-center")
+				else if (key === "gift" || key === "nsfw") cell = termRenderer.cell(termRenderer.boolBadge(value), "cell-center")
 				else cell = termRenderer.cell(value)
 			} else {
-				if (key === "name") cell = termRenderer.cell(value, "cell-name")
-				else if (key === "description" || key === "resolution") cell = termRenderer.cell(value, "cell-desc")
+				if (key === "description" || key === "resolution") cell = termRenderer.cell(value, "cell-desc")
 				else if (key === "level") cell = termRenderer.cell(termRenderer.severityBadge(term))
-				else if (key === "nsfw") cell = termRenderer.cell(termRenderer.boolBadge(value))
+				else if (key === "nsfw") cell = termRenderer.cell(termRenderer.boolBadge(value), "cell-center")
 				else if (key === "reward") cell = termRenderer.cell(termRenderer.rewardChip(term))
 				else cell = termRenderer.cell(value)
 			}
 			row.appendChild(cell)
 		}
 
-		const nameCell = row.firstElementChild
-		nameCell.classList.add("copy-name")
-		nameCell.title = "Click to copy"
-		nameCell.addEventListener("click", () => {
-			copyToClipboard(term.toString(), isItem ? "Item" : "Curse")
-			nameCell.classList.add("copied")
-			setTimeout(() => nameCell.classList.remove("copied"), 1200)
-		})
+		if (typeof options.onOpen === "function") {
+			row.classList.add("openable")
+			row.tabIndex = 0
+			row.addEventListener("click", (event) => {
+				if (event.target.closest("button, a, input")) return
+				options.onOpen()
+			})
+			row.addEventListener("keydown", (event) => {
+				if (event.key === "Enter" && event.target === row) options.onOpen()
+			})
+		}
 		return row
 	}
 
@@ -220,53 +251,91 @@ class termRenderer {
 		return td
 	}
 
+	/** small category label with its shelf icon */
+	static categoryTag(category) {
+		const tag = termRenderer.element("span", "cat-tag")
+		const url = termRenderer.ballUrl(category)
+		if (url) {
+			const img = document.createElement("img")
+			img.src = url
+			img.alt = ""
+			tag.appendChild(img)
+		}
+		tag.appendChild(document.createTextNode(category))
+		return tag
+	}
+
 	// ---------------------------------------------------------------- cards
 
+	/** accent colour per curse severity, used for the card edge and the reveal burst */
+	static severityColors = { minor: "#3BA99C", moderate: "#E3A33B", major: "#E0524D", "": "#9B6BF0" }
+
 	/**
-	 * "Keep in codex" + "Copy" row at the bottom of a card
+	 * @param {gachaCurse} curse
+	 * @returns {string}
+	 */
+	static severityColor(curse) {
+		return termRenderer.severityColors[curse.severity()] || termRenderer.severityColors[""]
+	}
+
+	/**
+	 * how dramatic a curse reveal should be
+	 * @param {gachaCurse} curse
+	 * @returns {"low"|"mid"|"high"}
+	 */
+	static severityTier(curse) {
+		return { minor: "low", moderate: "mid", major: "high" }[curse.severity()] || "mid"
+	}
+
+	/**
+	 * "Keep in codex" + "Copy" row at the bottom of a card. without onSave only Copy is shown.
 	 * @param {gachaItem|gachaCurse} term
-	 * @param {(term) => void} onSave
+	 * @param {(term) => void} [onSave]
 	 */
 	static cardActions(term, onSave) {
+		const isItem = term instanceof gachaItem
 		const actions = termRenderer.element("div", "rc-actions")
-		const save = termRenderer.element("button", "btn primary", "Keep in codex")
-		save.addEventListener("click", () => {
-			onSave(term)
-			save.textContent = "Kept"
-			save.disabled = true
-		})
-		const copy = termRenderer.element("button", "btn right", "Copy")
-		copy.addEventListener("click", () => copyToClipboard(term.toString(), term instanceof gachaItem ? "Item" : "Curse"))
-		actions.append(save, copy)
+		if (typeof onSave === "function") {
+			const save = termRenderer.element("button", "btn primary", isItem ? "Keep in codex" : "Bind to codex")
+			save.addEventListener("click", () => {
+				onSave(term)
+				save.textContent = isItem ? "Kept" : "Bound"
+				save.disabled = true
+			})
+			actions.appendChild(save)
+		}
+		const copy = termRenderer.element("button", "btn ghost", "Copy as text")
+		copy.addEventListener("click", () => copyToClipboard(term.toString(), isItem ? "Scroll" : "Curse"))
+		actions.appendChild(copy)
 		return actions
 	}
 
 	/**
-	 * result card for an item: rank square, title, chips, description, stat grid, modifier chips.
+	 * result card for an item: title with category and series, rank seal, flavour line, description,
+	 * stat grid, modifier chips.
 	 * @param {gachaItem} item
-	 * @param {{onSave?: (item: gachaItem) => void, compact?: boolean}} options onSave adds the action row; compact drops the stat grid (machine screen)
+	 * @param {{onSave?: (item: gachaItem) => void, actions?: boolean}} options onSave adds a Keep button;
+	 *   either one adds the action row (actions alone gives just Copy)
 	 * @returns {HTMLElement}
 	 */
 	static buildItemCard(item, options = {}) {
-		const card = termRenderer.element("article", "result-card" + (options.compact ? " compact" : ""))
+		const card = termRenderer.element("article", "result-card item-card")
 		const color = termRenderer.rankColor(item.get("rank"))
 		card.style.setProperty("--c", color)
+		card.dataset.tier = termRenderer.rankTier(item.get("rank"))
 
 		const top = termRenderer.element("div", "rc-top")
-		const rank = termRenderer.element("div", "rc-rank", item.get("rank"))
-		if (["F", "A", "SSS"].indexOf(String(item.get("rank")).toUpperCase()) !== -1) rank.classList.add("light")
+		const rank = termRenderer.element("div", "rc-rank")
+		rank.appendChild(termRenderer.element("span", "rc-rank-label", "Rank"))
+		rank.appendChild(termRenderer.element("strong", "", item.get("rank")))
 
 		const title = termRenderer.element("div", "rc-title")
+		const kicker = termRenderer.element("div", "rc-kicker")
+		kicker.appendChild(termRenderer.categoryTag(item.get("category")))
+		if (item.get("series")) kicker.appendChild(termRenderer.element("span", "rc-series", item.get("series")))
+		title.appendChild(kicker)
 		title.appendChild(termRenderer.element("h3", "", item.get("name")))
-		title.appendChild(termRenderer.element("div", "rc-series", item.get("series")))
-		const chips = termRenderer.element("div", "chips")
-		chips.appendChild(termRenderer.chip(item.get("category"), "accent"))
-		if (item.get("gender") && item.get("gender") !== "N/A") chips.appendChild(termRenderer.chip(item.get("gender")))
-		if (item.get("nsfw")) chips.appendChild(termRenderer.chip("NSFW", "warn"))
-		const tags = item.tags.getAllTrue()
-		if (tags.length) chips.appendChild(termRenderer.chip(tags.join(" · "), "dim"))
-		title.appendChild(chips)
-		top.append(rank, title)
+		top.append(title, rank)
 
 		const intro = termRenderer.element("p", "rc-intro", termRenderer.scrollIntro(item))
 		const desc = termRenderer.element("p", "rc-desc", item.get("description"))
@@ -282,92 +351,70 @@ class termRenderer {
 		}
 
 		const mods = termRenderer.element("div", "chips")
-		mods.appendChild(termRenderer.chip(`Stats ${item.get("stats")}`, "cyan"))
+		mods.appendChild(termRenderer.chip(`Total ${Number(item.get("stats")).toLocaleString()}`, "accent"))
+		if (item.get("gender") && item.get("gender") !== "N/A") mods.appendChild(termRenderer.chip(item.get("gender")))
 		if (item.get("growthType") !== "N/A") mods.appendChild(termRenderer.chip(`Growth: ${item.get("growthType")} / ${item.get("growthRate")}`))
 		if (item.get("restock") !== "N/A") mods.appendChild(termRenderer.chip(`Restock: ${item.get("restock")}`))
 		if (item.get("returnValue") !== "N/A") mods.appendChild(termRenderer.chip(`Return: ${item.get("returnValue")}`))
 		if (item.get("gift")) mods.appendChild(termRenderer.chip("Giftable"))
+		if (item.get("nsfw")) mods.appendChild(termRenderer.chip("NSFW", "warn"))
+		const tags = item.tags.getAllTrue()
+		if (tags.length) mods.appendChild(termRenderer.chip(tags.join(" · "), "dim"))
 
 		card.append(top, intro, desc, stats, mods)
-		if (options.onSave) card.appendChild(termRenderer.cardActions(item, options.onSave))
+		if (options.onSave || options.actions) card.appendChild(termRenderer.cardActions(item, options.onSave))
 		return card
 	}
 
 	/**
-	 * result card for a curse: severity square, title, target/affects chips, description, resolution, reward.
+	 * result card for a curse: severity, title, target/affects chips, description, resolution, and the
+	 * keys it pays out as key tokens.
 	 * @param {gachaCurse} curse
-	 * @param {{onSave?: (curse: gachaCurse) => void}} options
+	 * @param {{onSave?: (curse: gachaCurse) => void, actions?: boolean}} options
 	 * @returns {HTMLElement}
 	 */
 	static buildCurseCard(curse, options = {}) {
-		const card = termRenderer.element("article", "result-card")
-		card.style.setProperty("--c", "#A855F7")
+		const card = termRenderer.element("article", "result-card curse-card")
+		card.style.setProperty("--c", termRenderer.severityColor(curse))
 
 		const top = termRenderer.element("div", "rc-top")
-		const sev = termRenderer.element("div", "rc-rank sev sev-" + curse.severity(), curse.get("level"))
 		const title = termRenderer.element("div", "rc-title")
+		const kicker = termRenderer.element("div", "rc-kicker")
+		kicker.appendChild(termRenderer.severityBadge(curse))
+		if (curse.get("nsfw")) kicker.appendChild(termRenderer.chip("NSFW", "warn"))
+		title.appendChild(kicker)
 		title.appendChild(termRenderer.element("h3", "", curse.get("name")))
 		const chips = termRenderer.element("div", "chips")
-		chips.appendChild(termRenderer.chip(`Target: ${curse.get("target")}`, "accent"))
+		chips.appendChild(termRenderer.chip(`Target: ${curse.get("target")}`))
 		chips.appendChild(termRenderer.chip(`Affects: ${curse.get("affects")}`))
-		if (curse.get("nsfw")) chips.appendChild(termRenderer.chip("NSFW", "warn"))
 		title.appendChild(chips)
-		top.append(sev, title)
+		top.appendChild(title)
 
 		const desc = termRenderer.element("p", "rc-desc", curse.get("description"))
-		const res = termRenderer.element("p", "rc-sub")
-		res.appendChild(termRenderer.element("strong", "", "Resolution: "))
-		res.appendChild(document.createTextNode(curse.get("resolution")))
-		const reward = termRenderer.element("p", "rc-sub")
-		reward.appendChild(termRenderer.element("strong", "", "Reward: "))
-		reward.appendChild(termRenderer.rewardChip(curse))
+		const res = termRenderer.element("div", "rc-block")
+		res.appendChild(termRenderer.element("span", "rc-block-label", "Resolution"))
+		res.appendChild(termRenderer.element("p", "", curse.get("resolution")))
 
-		card.append(top, desc, res, reward)
-		if (options.onSave) card.appendChild(termRenderer.cardActions(curse, options.onSave))
-		return card
-	}
-
-	/**
-	 * the text that fills the painted plate on the curse machine, laid out like the artist's mockup:
-	 * name | severity | target | affects, then description, resolution, and a reward column with the ticket token.
-	 * @param {gachaCurse} curse
-	 * @returns {HTMLElement}
-	 */
-	static buildCursePlate(curse) {
-		const plate = termRenderer.element("div", "plate-content")
-		const head = termRenderer.element("div", "plate-head")
-		head.appendChild(termRenderer.element("span", "plate-name", curse.get("name")))
-		head.appendChild(termRenderer.element("span", "", `Severity: ${curse.get("level")}`))
-		head.appendChild(termRenderer.element("span", "", `Target: ${curse.get("target")}`))
-		head.appendChild(termRenderer.element("span", "", `Affects: ${curse.get("affects")}`))
-
-		const body = termRenderer.element("div", "plate-body")
-		const text = termRenderer.element("div", "plate-text")
-		text.appendChild(termRenderer.element("p", "plate-desc", curse.get("description")))
-		const res = termRenderer.element("p", "plate-res")
-		res.appendChild(termRenderer.element("strong", "", "Resolution: "))
-		res.appendChild(document.createTextNode(curse.get("resolution")))
-		text.appendChild(res)
-
-		const side = termRenderer.element("div", "plate-side")
-		side.appendChild(termRenderer.element("strong", "", "Reward:"))
+		const reward = termRenderer.element("div", "rc-block rc-reward")
+		reward.appendChild(termRenderer.element("span", "rc-block-label", "Pays out"))
+		const keys = termRenderer.element("div", "reward-keys")
 		const tickets = curse.rewardTickets()
 		if (tickets.length) {
 			for (let ticket of tickets) {
-				const line = termRenderer.element("div", "plate-reward")
-				line.appendChild(termRenderer.element("span", "", `${ticket.n}×`))
+				const key = termRenderer.element("span", "reward-key")
 				const img = document.createElement("img")
 				img.src = termRenderer.tokenUrl(ticket.star)
-				img.alt = `${ticket.star === 8 ? "EX" : ticket.star} star key`
-				line.appendChild(img)
-				side.appendChild(line)
+				img.alt = ""
+				key.append(img, termRenderer.element("span", "", `${ticket.n}× ${ticket.star === 8 ? "EX" : ticket.star}★`))
+				keys.appendChild(key)
 			}
 		} else {
-			side.appendChild(termRenderer.element("div", "plate-reward", curse.get("reward")))
+			keys.appendChild(termRenderer.rewardChip(curse))
 		}
-		side.appendChild(termRenderer.element("span", "", `NSFW: ${curse.get("nsfw") ? "Yes" : "No"}`))
-		body.append(text, side)
-		plate.append(head, body)
-		return plate
+		reward.appendChild(keys)
+
+		card.append(top, desc, res, reward)
+		if (options.onSave || options.actions) card.appendChild(termRenderer.cardActions(curse, options.onSave))
+		return card
 	}
 }

@@ -26,8 +26,8 @@ the deploy workflow serves the site from `/` when that file exists.
 
 ## Themes
 
-Five looks are built in (Luna, Olive, Silver, Classic, Midnight), picked from Options. A theme is one block of
-variable overrides in `src/style.css`.
+The site is dark by default with a light mode. It follows the system setting until you pick one from the
+header button or Options. Both modes are blocks of colour tokens at the top of `src/style.css`.
 
 ## License
 

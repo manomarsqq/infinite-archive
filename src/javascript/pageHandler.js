@@ -5,7 +5,7 @@ import { gachaItem } from "./gachaItem";
 import { termRenderer } from "./termRenderer";
 import { gachaReveal } from "./gachaReveal";
 import { quickstart } from "./quickstart";
-import { toast, copyToClipboard } from "./utils";
+import { toast } from "./utils";
 
 export { pageHandler }
 
@@ -17,19 +17,31 @@ const PROFILES_KEY = "infiniteArchive.profiles"
 // portraits are scaled down to this many pixels on the long side before storing
 const PORTRAIT_MAX = 360
 
-// theme names the Options dialog offers; anything else falls back to the first one (the Archive look)
-const THEMES = ["archive", "luna", "olive", "silver", "classic", "midnight"]
+// theme choices in Options. "system" follows prefers-color-scheme; anything else saved by an older
+// version of the site (the XP themes) falls back to system, except midnight which was the dark one.
+const THEMES = ["system", "light", "dark"]
 
-// the three content lights on the item machine -> NSFW options
+// content modes -> NSFW options
 const CONTENT_MODES = {
 	normal: { NSFW: false, NSFWOnly: false },
 	pg13: { NSFW: true, NSFWOnly: false },
 	r18: { NSFW: true, NSFWOnly: true },
 }
 
+// key names for the Draw panel label, by star level
+const KEY_NAMES = ["Any shelf", "1★ Iron", "2★ Silver", "3★ Blue steel", "4★ Gold", "5★ Platinum", "6★ Crystal", "7★ Star-iron", "EX★ The gap"]
+
+// hashes from the old eight-tab layout -> [page, draw mode]
+const TAB_ALIASES = {
+	items: ["draw", "items"],
+	curses: ["draw", "curses"],
+	about: ["guide"],
+	starts: ["guide"],
+}
+
 /**
  * everything that reads or writes the page. holds the roll histories and search results,
- * drives the machines, tables, tabs, options dialog and quickstart.
+ * drives the draw stages, tables, pages, dialogs and quickstart.
  * data questions go to filteringHandler, build/option state to gachaBuildsOptionsHandler.
  */
 class pageHandler {
@@ -62,6 +74,9 @@ class pageHandler {
 
 	/** selected ticket star level, 0 = no ticket */
 	#ticket = 0
+
+	/** which half of the Draw page is showing */
+	#drawMode = "items"
 
 	/** reveal handles for the roll in flight, so a second click skips */
 	#rolling = { items: null, curses: null }
@@ -114,43 +129,55 @@ class pageHandler {
 
 	/**
 	 * one-time page setup after the data and cookies are in: table headers, options, build labels,
-	 * quickstart, clock, and the tab named in the url hash.
+	 * quickstart, and the page named in the url hash.
 	 */
 	initPage() {
 		for (let table of document.querySelectorAll("table.dataTable")) {
-			termRenderer.buildTableHeader(table, table.dataset.kind, table.dataset.extra)
+			termRenderer.buildTableHeader(table, table.dataset.kind, table.dataset.extra, table.dataset.columns === "compact")
 		}
 		this.createAllSortButtons()
 		this.applyAllOptions()
 		this.setTicket(0)
+		this.setDrawMode("items")
 		this.redrawAllSaveTables()
 		this.redrawHistoryTables()
 		this.#quickstart.init()
 		this.loadProfile()
-		this.changeTabTo(this.#tabFromHash() || "home")
+		this.changeTabTo(location.hash.replace("#", "") || "home")
 		if (filteringHandler.usingSampleData) toast("data/values.json has not been built yet, showing the sample scrolls", "Sample data")
 	}
 
-	// ---------------------------------------------------------------- options dialog
+	// ---------------------------------------------------------------- dialogs
 
-	/**
-	 * display the options dialog
-	 */
+	/** display the options dialog */
 	static openOptions() {
-		document.getElementById("optionsMenu").classList.add("open")
-		document.getElementById("drawerBackdrop").classList.add("open")
+		const dialog = document.getElementById("optionsMenu")
+		if (!dialog.open) dialog.showModal()
 	}
 
-	/**
-	 * close the options dialog
-	 */
+	/** close the options dialog */
 	static closeOptions() {
-		document.getElementById("optionsMenu").classList.remove("open")
-		document.getElementById("drawerBackdrop").classList.remove("open")
+		const dialog = document.getElementById("optionsMenu")
+		if (dialog.open) dialog.close()
 	}
 
 	/**
-	 * update option checkboxes/other things, and then apply those changes
+	 * show the full card for one entry in the detail dialog
+	 * @param {gachaItem|gachaCurse} term
+	 * @param {(term) => void} [onSave] adds a Keep / Bind button
+	 */
+	showDetails(term, onSave) {
+		const options = { onSave, actions: true }
+		const card = term instanceof gachaItem ? termRenderer.buildItemCard(term, options) : termRenderer.buildCurseCard(term, options)
+		document.getElementById("detailSlot").replaceChildren(card)
+		const dialog = document.getElementById("detailDialog")
+		if (!dialog.open) dialog.showModal()
+	}
+
+	// ---------------------------------------------------------------- options
+
+	/**
+	 * update option controls, and then apply those changes
 	 * should only be used once to initalize page
 	 */
 	applyAllOptions() {
@@ -161,25 +188,36 @@ class pageHandler {
 	}
 
 	/**
-	 * put the saved theme on <html data-theme> (style.css has a block per theme) and select it in the dialog.
-	 * the base tokens in style.css are the Luna look; every other theme, Archive included, is a block of overrides.
+	 * put the theme on <html data-theme> ("light"/"dark"; none for system) and mark it in Options.
 	 * @param {string} [theme] defaults to the saved option
 	 */
 	applyTheme(theme = this.#buildsOptions.getOption("theme")) {
-		if (THEMES.indexOf(theme) === -1) theme = THEMES[0]
-		document.documentElement.dataset.theme = theme
-		document.getElementById("optionsThemeSelector").value = theme
+		if (theme === "midnight") theme = "dark"
+		if (THEMES.indexOf(theme) === -1) theme = "system"
+		if (theme === "system") delete document.documentElement.dataset.theme
+		else document.documentElement.dataset.theme = theme
+		for (let button of document.querySelectorAll("[data-theme-choice]")) {
+			button.setAttribute("aria-pressed", button.dataset.themeChoice === theme)
+		}
 	}
 
 	/**
-	 * the theme <select> in the options dialog
-	 * @param {Event} event 
+	 * a theme was picked in Options
+	 * @param {string} theme "system" | "light" | "dark"
 	 */
-	themeChangeListener(event) {
-		const theme = event.target.value
+	setTheme(theme) {
 		this.#buildsOptions.changeOption("theme", theme)
 		this.applyTheme(theme)
 	}
+
+	/** the header button: flip whatever is showing now */
+	toggleTheme() {
+		const explicit = document.documentElement.dataset.theme
+		const systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+		const isDark = explicit ? explicit === "dark" : systemDark
+		this.setTheme(isDark ? "light" : "dark")
+	}
+
 	/**
 	 * update the background image checkbox element
 	 * @param {boolean} isOn if it's on or not
@@ -190,7 +228,7 @@ class pageHandler {
 	}
 
 	/**
-	 * update the background image itself. the image is set in style.css, body.no-bg removes it.
+	 * update the background itself. the starfield is drawn in style.css, body.no-bg removes it.
 	 * @param {boolean} isOn
 	 */
 	updateBackgroundImage(isOn = this.#buildsOptions.getOption("backgroundImage")) {
@@ -216,25 +254,19 @@ class pageHandler {
 	}
 
 	/**
-	 * reflect the NSFW options into the dialog checkboxes and the machine lights, then refilter
+	 * reflect the NSFW options into every content switch (Options and the Draw panel), then refilter
 	 */
 	#syncContentControls() {
-		const nsfw = this.#buildsOptions.getOption("NSFW")
-		const nsfwOnly = this.#buildsOptions.getOption("NSFWOnly")
-		document.getElementById("nsfwCheckbox").checked = nsfw
-		document.getElementById("nsfwOnlyCheckbox").checked = nsfwOnly
-		document.getElementById("nsfwOnlyCheckbox").closest("label").hidden = !nsfw
 		const mode = this.#contentMode()
-		for (let light of document.querySelectorAll(".hotspot.light")) {
-			light.classList.toggle("on", light.dataset.mode === mode)
-			light.setAttribute("aria-pressed", light.dataset.mode === mode)
+		for (let button of document.querySelectorAll("[data-content-mode]")) {
+			button.setAttribute("aria-pressed", button.dataset.contentMode === mode)
 		}
 		this.#filteringHandler.updateContentFilter()
 		this.#updatePoolCount()
 	}
 
 	/**
-	 * set the content mode from a machine light
+	 * set the content mode from one of the switches
 	 * @param {"normal"|"pg13"|"r18"} mode
 	 */
 	setContentMode(mode) {
@@ -243,18 +275,20 @@ class pageHandler {
 		this.#syncContentControls()
 	}
 
-	/**
-	 * content options change listener (the dialog checkboxes)
-	 * @param {Event} event
-	 */
-	contentOptionsChangeListener(event){
-		const nsfw = document.getElementById("nsfwCheckbox").checked
-		const nsfwOnly = nsfw && document.getElementById("nsfwOnlyCheckbox").checked
-		this.#buildsOptions.changeOptionMultiple({ key: "NSFW", value: nsfw }, { key: "NSFWOnly", value: nsfwOnly })
-		this.#syncContentControls()
-	}
+	// ---------------------------------------------------------------- draw panel
 
-	// ---------------------------------------------------------------- item machine filters
+	/**
+	 * show the scroll or the curse half of the Draw page
+	 * @param {"items"|"curses"} mode
+	 */
+	setDrawMode(mode) {
+		this.#drawMode = mode === "curses" ? "curses" : "items"
+		document.getElementById("drawLayout").dataset.mode = this.#drawMode
+		for (let button of document.querySelectorAll("[data-draw-mode]")) {
+			button.setAttribute("aria-pressed", button.dataset.drawMode === this.#drawMode)
+		}
+		this.#updatePoolCount()
+	}
 
 	/**
 	 * called by each category filter checkbox, pass on it's current value.
@@ -282,50 +316,38 @@ class pageHandler {
 	}
 
 	/**
-	 * pick a ticket: filter ranks, show its token in the machine's side panel, mark the popover button
+	 * pick a key: filter ranks, mark its button, name it in the panel label
 	 * @param {number|string} star 0-8
 	 */
 	setTicket(star) {
 		this.#ticket = parseInt(star) || 0
 		this.#filteringHandler.updateRankFilter(this.#ticket)
-		const token = document.getElementById("panelToken")
-		token.src = termRenderer.tokenUrl(this.#ticket)
-		token.alt = this.#ticket ? `${this.#ticket === 8 ? "EX" : this.#ticket} star key` : "No key"
-		for (let button of document.querySelectorAll("#starPopover .token-pick")) {
+		for (let button of document.querySelectorAll(".key-pick")) {
 			button.setAttribute("aria-pressed", parseInt(button.dataset.star) === this.#ticket)
 		}
-		document.getElementById("starPopover").hidden = true
+		document.getElementById("keyName").textContent = KEY_NAMES[this.#ticket] || KEY_NAMES[0]
 		this.#updatePoolCount()
 	}
 
-	/** "N items in the pool" under the machine */
+	/** "N scrolls within reach" / "N curses in the tome" above the draw button */
 	#updatePoolCount() {
-		const count = this.#filteringHandler.getRollPoolSize("items")
-		document.getElementById("poolCount").textContent = `${count.toLocaleString()} scrolls within reach`
-	}
-
-	/**
-	 * open one popover (ticket tokens or categories) under its machine button, closing the other
-	 * @param {string} id
-	 */
-	togglePopover(id) {
-		for (let popover of document.querySelectorAll(".machine .popover")) {
-			popover.hidden = popover.id === id ? !popover.hidden : true
-		}
-	}
-
-	closePopovers() {
-		for (let popover of document.querySelectorAll(".machine .popover")) popover.hidden = true
+		const element = document.getElementById("poolCount")
+		if (!element) return
+		const count = this.#filteringHandler.getRollPoolSize(this.#drawMode)
+		element.textContent = this.#drawMode === "curses"
+			? `${count.toLocaleString()} curses in the tome`
+			: `${count.toLocaleString()} scrolls within reach`
+		element.classList.toggle("empty", count === 0)
 	}
 
 	// ---------------------------------------------------------------- builds
 
 	/**
-	 * populate the build <selector> element with options.
+	 * populate the codex <select> with options.
 	 * should be called whenever a build is added or deleted
 	 */
 	populateBuildSelector() {
-		const select = document.getElementById("optionsBuildSelector")
+		const select = document.getElementById("codexSelector")
 		select.textContent = "" //wipe with textContent to avoid .innerHTML
 
 		const builds = this.#buildsOptions.getOption("buildsArray")
@@ -344,7 +366,7 @@ class pageHandler {
 		this.#updateBuildLabels()
 	}
 
-	/** every "Current build: x" label and the Build tab totals */
+	/** every current-codex label and the Codex page totals */
 	#updateBuildLabels() {
 		const name = this.#buildsOptions.getCurrentBuildKey()
 		for (let label of document.querySelectorAll(".current-build-name")) label.textContent = name
@@ -368,11 +390,17 @@ class pageHandler {
 		try {
 			localStorage.setItem(PROFILES_KEY, JSON.stringify(this.#profiles))
 			const note = document.getElementById("profileSaved")
-			if (note) { note.textContent = "Saved"; setTimeout(() => { note.textContent = "" }, 1200) }
+			if (note) {
+				note.textContent = "Saved"
+				note.classList.add("show")
+				clearTimeout(this.#savedTimer)
+				this.#savedTimer = setTimeout(() => note.classList.remove("show"), 1200)
+			}
 		} catch (error) {
 			toast("Could not save the character sheet. The portrait may be too large for this browser.", "Codex")
 		}
 	}
+	#savedTimer
 
 	/** the sheet for the current codex, created empty on first use */
 	#profile() {
@@ -392,7 +420,7 @@ class pageHandler {
 
 	/**
 	 * a sheet field changed
-	 * @param {Event} event 
+	 * @param {Event} event
 	 */
 	profileFieldListener(event) {
 		this.#profile()[event.target.dataset.profile] = event.target.value
@@ -410,7 +438,7 @@ class pageHandler {
 
 	/**
 	 * a portrait file was chosen: scale it down on a canvas and keep it as a data url
-	 * @param {File} file 
+	 * @param {File} file
 	 */
 	portraitChangeListener(file) {
 		if (!file || !file.type.startsWith("image/")) return
@@ -439,19 +467,18 @@ class pageHandler {
 	}
 
 	/**
-	 * handles input validation on the event and calls createNewBuild()
-	 * @param {KeyboardEvent} event
-	*/
-	createNewBuildEventHandler(event) {
-		const value = event.target.value.trim()
-		if (event.key != "Enter" || value == "") return;
-		event.preventDefault()
+	 * create a codex from the name field and switch to it
+	 * @param {HTMLInputElement} input
+	 */
+	createNewBuild(input) {
+		const value = input.value.trim()
+		if (value == "") { input.focus(); return }
 
 		if (!this.#buildsOptions.createNewBuild(value)) {
 			toast(`"${value}" is already a codex`)
 			return;
 		}
-		event.target.value = ""
+		input.value = ""
 		this.populateBuildSelector()
 		this.redrawAllSaveTables()
 		toast(`Codex "${value}" created`)
@@ -472,7 +499,7 @@ class pageHandler {
 	*/
 	deleteCurrentBuildListener(){
 		const currentBuild = this.#buildsOptions.getOption("build")
-		if (confirm(`Are you sure you want to delete codex "${currentBuild}"?`)) {
+		if (confirm(`Delete codex "${currentBuild}" and everything kept in it?`)) {
 			this.#buildsOptions.deleteBuild(currentBuild)
 			this.populateBuildSelector()
 			this.redrawAllSaveTables()
@@ -489,78 +516,78 @@ class pageHandler {
 		if (!value) return
 		this.#buildsOptions.saveTerm(term, value)
 		this.redrawAllSaveTables(term)
-		toast(`Kept "${value.get("name")}" in codex "${this.#buildsOptions.getCurrentBuildKey()}"`)
+		toast(`${term === "items" ? "Kept" : "Bound"} "${value.get("name")}" in codex "${this.#buildsOptions.getCurrentBuildKey()}"`)
 	}
 
-	/** save the most recent roll of a kind (the machine's save buttons) */
-	saveLatest(term){
-		const latest = this.#history[term][0]
-		if (!latest) { toast(term === "items" ? "Draw a scroll first" : "Read a curse first"); return }
-		this.saveTerm(term, latest)
-	}
+	// ---------------------------------------------------------------- pages
 
-	/** copy the most recent roll of a kind */
-	copyLatest(term) {
-		const latest = this.#history[term][0]
-		if (!latest) { toast("Draw a scroll first"); return }
-		copyToClipboard(latest.toString(), term === "items" ? "Item" : "Curse")
-	}
-
-	// ---------------------------------------------------------------- tabs
-
-	/** "#items" -> "items" when such a tab exists, otherwise null */
-	#tabFromHash() {
-		const name = location.hash.replace("#", "")
+	/**
+	 * "draw" -> ["draw"], "curses" -> ["draw", "curses"]; null when nothing matches
+	 * @param {string} name
+	 * @returns {string[]|null}
+	 */
+	#resolveTab(name) {
+		if (TAB_ALIASES[name]) return TAB_ALIASES[name]
 		const element = name && document.getElementById(name)
-		return element && element.classList.contains("tabcontent") ? name : null
+		return element && element.classList.contains("tabcontent") ? [name] : null
 	}
 
 	/**
-	 * show one page, mark its index tab, keep the url hash in sync
-	 * @param {string} targetTabID
+	 * show one page, mark its nav button, keep the url hash in sync.
+	 * accepts the old tab names too (#items, #curses, #about, #starts).
+	 * @param {string} target
 	 */
-	changeTabTo(targetTabID) {
-		const newTab = document.getElementById(targetTabID)
-		if (!newTab) return
+	changeTabTo(target) {
+		const resolved = this.#resolveTab(target)
+		if (!resolved) return
+		const [pageId, drawMode] = resolved
+		const newTab = document.getElementById(pageId)
 		for (let tab of document.querySelectorAll(".tabcontent")) {
 			tab.classList.toggle("active", tab === newTab)
 		}
 		for (let button of document.querySelectorAll("#nav [data-tab]")) {
-			button.classList.toggle("active", button.dataset.tab === targetTabID)
+			button.classList.toggle("active", button.dataset.tab === pageId)
+			if (button.dataset.tab === pageId) button.setAttribute("aria-current", "page")
+			else button.removeAttribute("aria-current")
 		}
-		if (location.hash !== "#" + targetTabID) history.replaceState(null, "", "#" + targetTabID)
-		this.closePopovers()
+		if (drawMode) this.setDrawMode(drawMode)
+		if (location.hash !== "#" + pageId) history.replaceState(null, "", "#" + pageId)
 		window.scrollTo({ top: 0 })
 	}
 
 	/** react to the user editing the hash or using the back button */
 	hashChangeListener() {
-		const name = this.#tabFromHash()
-		if (name) this.changeTabTo(name)
+		const name = location.hash.replace("#", "")
+		if (this.#resolveTab(name)) this.changeTabTo(name)
 	}
 
 	// ---------------------------------------------------------------- tables
 
 	/**
-	 * redraw a table with a button on each row
+	 * redraw a table with a button on each row; clicking a row opens the entry in the detail dialog
 	 * @param {HTMLTableElement} table
 	 * @param {(gachaItem|gachaCurse)[]} dataArray
 	 * @param {string} buttonText
 	 * @param {string} buttonClass
 	 * @param {(index: number) => void} onClick
-	 * @param {number} [maxRows]
+	 * @param {{maxRows?: number, detailSave?: (index: number) => void}} [options] detailSave puts a Keep / Bind button in the detail card
 	 */
-	#redrawTableWithButton(table, dataArray, buttonText, buttonClass, onClick, maxRows) {
+	#redrawTableWithButton(table, dataArray, buttonText, buttonClass, onClick, options = {}) {
 		const rows = []
-		const limit = maxRows ? Math.min(maxRows, dataArray.length) : dataArray.length
+		const limit = options.maxRows ? Math.min(options.maxRows, dataArray.length) : dataArray.length
+		const compact = table.classList.contains("compact")
 
 		for(let i = 0; i < limit; i++){
-			const row = termRenderer.createRow(dataArray[i])
+			const term = dataArray[i]
+			const row = termRenderer.createRow(term, {
+				compact,
+				onOpen: () => this.showDetails(term, options.detailSave ? () => options.detailSave(i) : undefined)
+			})
 			const button = document.createElement("button")
 			button.className = "btn small " + buttonClass
 			button.textContent = buttonText
 			button.addEventListener("click", () => onClick(i))
-			row.appendChild(document.createElement("td")).appendChild(button)
+			row.appendChild(termRenderer.cell(button, "cell-action"))
 			rows.push(row)
 		}
 
@@ -606,7 +633,7 @@ class pageHandler {
 			row.className = "empty-row"
 			const cell = document.createElement("td")
 			cell.colSpan = table.querySelectorAll("thead th").length || 1
-			cell.textContent = "Nothing here yet."
+			cell.textContent = table.dataset.empty || "Nothing here yet."
 			row.appendChild(cell)
 			tbody.appendChild(row)
 		}
@@ -619,7 +646,8 @@ class pageHandler {
 	redrawHistoryTables() {
 		for (let term of ["items", "curses"]) {
 			const table = document.querySelector(`.historyTable.${term}Table`)
-			this.#redrawTableWithButton(table, this.#history[term], term === "items" ? "Keep" : "Bind", "", (i) => this.saveTerm(term, this.#history[term][i]))
+			const save = (i) => this.saveTerm(term, this.#history[term][i])
+			this.#redrawTableWithButton(table, this.#history[term], term === "items" ? "Keep" : "Bind", "", save, { detailSave: save })
 		}
 	}
 
@@ -633,7 +661,7 @@ class pageHandler {
 		for (let t of terms) {
 			const saved = this.#buildsOptions.getCurrentSaved(t)
 			for(let table of document.querySelectorAll(`.saveTable.${t}Table`)){
-				this.#redrawTableWithButton(table, saved, "Remove", "danger", (i) => {
+				this.#redrawTableWithButton(table, saved, "Remove", "ghost danger", (i) => {
 					this.#buildsOptions.removeCurrentSaved(t, i)
 					this.redrawAllSaveTables(t)
 				})
@@ -645,7 +673,8 @@ class pageHandler {
 	/** a search results table from the stored results */
 	redrawSearchTable(term) {
 		const table = document.getElementById(term === "items" ? "searchItemsTable" : "searchCursesTable")
-		this.#redrawTableWithButton(table, this.#searchResults[term], term === "items" ? "Keep" : "Bind", "", (i) => this.saveTerm(term, this.#searchResults[term][i]), MAX_SEARCH_ROWS)
+		const save = (i) => this.saveTerm(term, this.#searchResults[term][i])
+		this.#redrawTableWithButton(table, this.#searchResults[term], term === "items" ? "Keep" : "Bind", "", save, { maxRows: MAX_SEARCH_ROWS, detailSave: save })
 	}
 
 	/**
@@ -667,6 +696,15 @@ class pageHandler {
 			throw error
 		}
 		this.redrawSearchTable(term)
+	}
+
+	/**
+	 * switch the Catalogue between scrolls and curses
+	 * @param {string} sectionId "searchItems" | "searchCurses"
+	 */
+	setSearchSection(sectionId) {
+		for (let button of document.querySelectorAll("[data-search]")) button.setAttribute("aria-pressed", button.dataset.search === sectionId)
+		for (let section of document.querySelectorAll(".searchSections")) section.classList.toggle("active", section.id === sectionId)
 	}
 
 	/**
@@ -696,8 +734,6 @@ class pageHandler {
 		const registry = {
 			itemRollHistoryTable: { array: () => this.#history.items, redraw: () => this.redrawHistoryTables() },
 			curseRollHistoryTable: { array: () => this.#history.curses, redraw: () => this.redrawHistoryTables() },
-			saveTable: { saved: "items" },
-			cursesSaveTable: { saved: "curses" },
 			buildItemsTable: { saved: "items" },
 			buildCursesTable: { saved: "curses" },
 			searchItemsTable: { array: () => this.#searchResults.items, redraw: () => this.redrawSearchTable("items") },
@@ -708,7 +744,8 @@ class pageHandler {
 			if (!table) continue
 			const entry = registry[tableId]
 			for (let th of table.querySelectorAll("th.sortable")) {
-				th.addEventListener("click", () => {
+				th.tabIndex = 0
+				const sort = () => {
 					const ascending = !th.classList.contains("sorted-asc")
 					for (let other of table.querySelectorAll("th.sortable")) other.classList.remove("sorted-asc", "sorted-desc")
 					th.classList.add(ascending ? "sorted-asc" : "sorted-desc")
@@ -720,7 +757,9 @@ class pageHandler {
 						entry.array().sort(compare)
 						entry.redraw()
 					}
-				})
+				}
+				th.addEventListener("click", sort)
+				th.addEventListener("keydown", (event) => { if (event.key === "Enter") sort() })
 			}
 		}
 	}
@@ -755,72 +794,62 @@ class pageHandler {
 		URL.revokeObjectURL(link.href);
 	}
 
-	// ---------------------------------------------------------------- machines
+	// ---------------------------------------------------------------- drawing
 
 	/**
-	 * roll on a machine: pick a result, play its reveal, record it in the history.
-	 * a click while a roll is playing skips to the end.
+	 * draw from the archive or the tome: pick a result, play its reveal on the stage, record it in the history.
+	 * a click while a reveal is playing skips to the end.
 	 * @param {"items"|"curses"} term
 	 */
 	roll(term){
 		if (this.#rolling[term]) { this.#rolling[term].skip(); return }
 
+		const isItem = term === "items"
+		const stage = document.getElementById(isItem ? "itemStage" : "curseStage")
 		const result = this.#filteringHandler.getRandomTerm(term)
-		const machine = document.getElementById(term === "items" ? "itemsMachine" : "cursesMachine")
 		if (!result) {
-			machine.classList.add("shake-no")
-			setTimeout(() => machine.classList.remove("shake-no"), 400)
-			toast(term === "items" ? "No scroll within reach. Check your key, shelves, and content settings." : "No curses match your content settings.", "Nothing to draw")
+			stage.classList.remove("shake-no")
+			void stage.offsetWidth
+			stage.classList.add("shake-no")
+			toast(isItem ? "No scroll within reach. Check your key, shelves, and content setting." : "No curses match your content setting.", "Nothing to draw")
 			return
 		}
 		this.#history[term].unshift(result)
-		this.closePopovers()
 
-		const finish = () => {
-			this.#rolling[term] = null
-			machine.classList.remove("rolling")
-			this.redrawHistoryTables()
+		const button = document.getElementById(isItem ? "itemRollButton" : "cursesRollButton")
+		button.classList.add("rolling")
+		// in the one-column layout the stage sits under the controls; bring it into view
+		if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) {
+			stage.scrollIntoView({ behavior: "smooth", block: "start" })
 		}
-		machine.classList.add("rolling")
+		const save = (value) => this.saveTerm(term, value)
 
-		if (term === "items") {
-			const screen = document.getElementById("itemScreen")
-			const ball = document.getElementById("panelBall")
-			ball.hidden = true
-			this.#rolling.items = gachaReveal.screenRoll({
-				screen: screen,
-				reel: document.getElementById("itemReel"),
-				stage: document.getElementById("itemStage"),
-				burst: document.getElementById("itemBurst"),
-				cardSlot: document.getElementById("itemCardSlot"),
-				names: this.#reelNames(),
-				card: termRenderer.buildItemCard(result, { compact: true }),
-				color: termRenderer.rankColor(result.get("rank")),
-				tier: termRenderer.rankTier(result.get("rank")),
-				onOpen: () => {
-					// the side panel shows the ball of the category that came out
-					ball.src = termRenderer.ballUrl(result.get("category")) || ""
-					ball.alt = result.get("category")
-					ball.hidden = !ball.src
-					finish()
-				}
-			})
-		} else {
-			this.#rolling.curses = gachaReveal.plateReveal({
-				plate: document.getElementById("cursePlate"),
-				content: termRenderer.buildCursePlate(result),
-				burst: document.getElementById("curseBurst"),
-				onOpen: finish
-			})
-		}
+		this.#rolling[term] = gachaReveal.stageRoll({
+			stage: stage,
+			reel: document.getElementById(isItem ? "itemReel" : "curseReel"),
+			burst: document.getElementById(isItem ? "itemBurst" : "curseBurst"),
+			cardSlot: document.getElementById(isItem ? "itemCardSlot" : "curseCardSlot"),
+			names: this.#reelNames(term),
+			card: isItem ? termRenderer.buildItemCard(result, { onSave: save }) : termRenderer.buildCurseCard(result, { onSave: save }),
+			color: isItem ? termRenderer.rankColor(result.get("rank")) : termRenderer.severityColor(result),
+			tier: isItem ? termRenderer.rankTier(result.get("rank")) : termRenderer.severityTier(result),
+			onOpen: () => {
+				this.#rolling[term] = null
+				button.classList.remove("rolling")
+				this.redrawHistoryTables()
+			}
+		})
 	}
 
-	/** a handful of random names from the current pool for the screen reel */
-	#reelNames() {
+	/**
+	 * a handful of random names from the current pool for the reel
+	 * @param {"items"|"curses"} term
+	 */
+	#reelNames(term) {
 		const names = []
 		for (let i = 0; i < 24; i++) {
-			const item = this.#filteringHandler.getRandomItem()
-			if (item) names.push(item.get("name"))
+			const entry = term === "curses" ? this.#filteringHandler.getRandomCurse() : this.#filteringHandler.getRandomItem()
+			if (entry) names.push(entry.get("name"))
 		}
 		return names
 	}

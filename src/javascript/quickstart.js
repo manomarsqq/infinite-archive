@@ -3,7 +3,7 @@ export { quickstart }
 /*
  * Quickstart tab.
  * Pick a start, pick a number of curses, and the site rolls everything:
- *   1. the start's tickets (the same numbers written on the Starting tab)
+ *   1. the start's tickets (the same numbers written in the Guide, under Ways in)
  *   2. N curses, drawn without repeats
  *   3. each curse's reward ("2x 4 Star") converted into more tickets
  *   4. one item per ticket, from the ranks that ticket can roll
@@ -21,7 +21,7 @@ export { quickstart }
  *   toast(message)
  */
 
-// key counts per way in. keep in sync with the text on the Ways In tab and the quickstart cards.
+// key counts per way in. keep in sync with Ways in on the Guide page and the quickstart cards.
 const STARTS = {
 	inherited: { label: "Inherited", tickets: [{ star: 3, n: 2 }, { star: 2, n: 1 }] },
 	chosen: { label: "Chosen at random", tickets: [{ star: 4, n: 1 }, { star: 2, n: 1 }, { star: 1, n: 1 }] },

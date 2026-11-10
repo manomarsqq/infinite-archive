@@ -1,24 +1,24 @@
 export { gachaReveal }
 
 /*
- * Reveal animations for the painted machines.
+ * Reveal animation for the draw stages on the Draw page.
  *
- * The machines themselves are artwork (see .machine in index.html / style.css), so the
- * motion happens on their screens: the item screen cycles names like a slot reel and
- * then pops the result card in with a particle burst scaled to the rank tier; the curse
- * plate flickers and fills. Everything visual is a css class flipped here, the
- * durations are the constants below and must match style.css.
+ * A stage moves through three states, each a class on the stage element:
+ *   idle     nothing drawn yet, shows the placeholder
+ *   rolling  names flicker past on the reel, slowing down
+ *   open     the result card is in, with a particle burst scaled to the rank tier
+ * Everything visual lives in style.css (.stage, .reel, .burst, card-in); the timings below
+ * are the only numbers that have to agree with it.
  *
  * Nothing in here knows about items or curses; pageHandler passes elements and callbacks.
  */
 
 // particle count per tier
-const PARTICLES = { low: 8, mid: 14, high: 22, top: 32 }
+const PARTICLES = { low: 10, mid: 16, high: 26, top: 38 }
 
-// timings in ms, paired with animation durations in style.css (noted on the right)
-const REEL_MS = 1100        // how long the name reel spins
-const REEL_STEP_MS = 55     // time per name on the reel, slows down towards the end
-const FLICKER_MS = 650      // .flicker on the curse plate: plate-flicker keyframes
+// timings in ms
+const REEL_MS = 1000        // how long the name reel spins
+const REEL_STEP_MS = 50     // time per name on the reel, slows down towards the end
 
 function reducedMotion() {
 	return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -37,12 +37,12 @@ function makeBurst(container, color, tier) {
 	for (let i = 0; i < count; i++) {
 		const particle = document.createElement("span")
 		const angle = (i / count) * Math.PI * 2 + Math.random() * 0.4
-		const dist = 60 + Math.random() * 110
+		const dist = 90 + Math.random() * 160
 		particle.style.setProperty("--dx", `${Math.cos(angle) * dist}px`)
-		particle.style.setProperty("--dy", `${Math.sin(angle) * dist}px`)
+		particle.style.setProperty("--dy", `${Math.sin(angle) * dist * 0.7}px`)
 		particle.style.setProperty("--d", `${Math.random() * 0.2}s`)
 		particle.style.setProperty("--c", i % 4 === 0 ? "#ffffff" : color) // every fourth is white for sparkle
-		const size = 4 + Math.random() * 6
+		const size = 3 + Math.random() * 6
 		particle.style.width = particle.style.height = `${size}px`
 		container.appendChild(particle)
 	}
@@ -51,42 +51,40 @@ function makeBurst(container, color, tier) {
 class gachaReveal {
 
 	/**
-	 * item machine: spin the name reel on the screen, then show the card with a burst.
-	 * returns { skip } to jump to the end early (a second click on the dial).
+	 * spin the name reel on a stage, then show the card with a burst.
+	 * returns { skip } to jump to the end early (a second click on the draw button).
 	 *
 	 * @param {{
-	 *   screen: HTMLElement,        the machine screen, gets .rolling while the reel spins
+	 *   stage: HTMLElement,         the stage, gets .rolling and then .open
 	 *   reel: HTMLElement,          text element the reel writes names into
-	 *   stage: HTMLElement,         holds the burst and the card slot, gets .open at the end
 	 *   burst: HTMLElement,
 	 *   cardSlot: HTMLElement,
 	 *   names: string[],            names to cycle through
 	 *   card: HTMLElement,          the result card
-	 *   color: string,              rank colour
+	 *   color: string,              accent colour (rank or severity)
 	 *   tier: "low"|"mid"|"high"|"top",
 	 *   onOpen?: () => void         called once when the card is shown
 	 * }} opts
 	 */
-	static screenRoll(opts) {
+	static stageRoll(opts) {
 		const timers = []
 		let done = false
 
-		opts.stage.className = "result-stage"
 		opts.cardSlot.textContent = ""
-		opts.screen.classList.remove("open", "idle")
-		opts.screen.classList.add("rolling")
+		opts.stage.classList.remove("open", "idle", "tier-low", "tier-mid", "tier-high", "tier-top")
+		opts.stage.classList.add("rolling")
 		opts.stage.style.setProperty("--c", opts.color)
-		opts.card.style.setProperty("--c", opts.color)
 		makeBurst(opts.burst, opts.color, opts.tier)
 
 		function open() {
 			if (done) return
 			done = true
 			timers.forEach(clearTimeout)
-			opts.screen.classList.remove("rolling")
-			opts.screen.classList.add("open")
 			opts.reel.textContent = ""
 			opts.cardSlot.appendChild(opts.card)
+			opts.stage.classList.remove("rolling")
+			// restart the open animations even when the previous draw left the class on
+			void opts.stage.offsetWidth
 			opts.stage.classList.add("open", "tier-" + opts.tier)
 			if (typeof opts.onOpen === "function") opts.onOpen()
 		}
@@ -102,42 +100,12 @@ class gachaReveal {
 		function tick() {
 			opts.reel.textContent = opts.names[Math.floor(Math.random() * opts.names.length)]
 			elapsed += step
-			step = REEL_STEP_MS + Math.round((elapsed / REEL_MS) * 120)
-			if (elapsed >= REEL_MS) { timers.push(setTimeout(open, 180)); return }
+			step = REEL_STEP_MS + Math.round((elapsed / REEL_MS) * 110)
+			if (elapsed >= REEL_MS) { timers.push(setTimeout(open, 160)); return }
 			timers.push(setTimeout(tick, step))
 		}
 		tick()
 
 		return { skip: open }
-	}
-
-	/**
-	 * curse machine: flicker the plate, then fill it.
-	 * @param {{
-	 *   plate: HTMLElement,         the plate element, gets .flicker then .open
-	 *   content: HTMLElement,       what to put on the plate
-	 *   burst?: HTMLElement,
-	 *   color?: string,
-	 *   onOpen?: () => void
-	 * }} opts
-	 */
-	static plateReveal(opts) {
-		let done = false
-		opts.plate.classList.remove("open", "idle")
-		if (opts.burst) makeBurst(opts.burst, opts.color || "#A855F7", "mid")
-
-		function open() {
-			if (done) return
-			done = true
-			opts.plate.classList.remove("flicker")
-			opts.plate.querySelector(".plate-slot").replaceChildren(opts.content)
-			opts.plate.classList.add("open")
-			if (typeof opts.onOpen === "function") opts.onOpen()
-		}
-
-		if (reducedMotion()) { open(); return { skip: open } }
-		opts.plate.classList.add("flicker")
-		const timer = setTimeout(open, FLICKER_MS)
-		return { skip: () => { clearTimeout(timer); open() } }
 	}
 }

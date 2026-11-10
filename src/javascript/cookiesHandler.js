@@ -108,7 +108,7 @@ class cookiesHandler {
 		//defaults
 		let optionsValues = {
 			"backgroundImage": true,
-			"theme": "archive",
+			"theme": "system",
 			"build": "default",
 			"buildsArray": ["default"],
 			"NSFW": false,

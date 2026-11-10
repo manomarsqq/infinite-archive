@@ -6,712 +6,676 @@
     <title>Infinite Archive</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Infinite Archive: draw scrolls of power, bind curses, and build a character for your story.">
-    <meta name="theme-color" content="#2A1B0E">
+    <meta name="theme-color" content="#0E0C18" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#F5EFE3" media="(prefers-color-scheme: light)">
+    <meta name="color-scheme" content="dark light">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="style.css">
     <script src="./javascript/main.js" type="module"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 
 <body>
-    <!-- ================= HEADER + INDEX TABS ================= -->
+    <!-- icon sprite, referenced with <svg><use href="#i-name"/></svg> -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="i-draw" viewBox="0 0 24 24"><path d="M12 2l2.2 6.3L20 10l-5.8 1.7L12 18l-2.2-6.3L4 10l5.8-1.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" fill="currentColor"/></symbol>
+        <symbol id="i-quick" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+        <symbol id="i-codex" viewBox="0 0 24 24"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5zM4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5A2.5 2.5 0 0 1 4 21.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 6.5l1 2.6 2.6.4-1.9 1.7.5 2.6-2.2-1.3-2.2 1.3.5-2.6-1.9-1.7 2.6-.4z" fill="currentColor"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+        <symbol id="i-guide" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+        <symbol id="i-gear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></g></symbol>
+        <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 1.8v2.4M12 19.8v2.4M22.2 12h-2.4M4.2 12H1.8M19.2 4.8l-1.7 1.7M6.5 17.5l-1.7 1.7M19.2 19.2l-1.7-1.7M6.5 6.5L4.8 4.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+        <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M7 3h11a3 3 0 0 1 0 6h-2v9a3 3 0 0 1-3 3H6a3 3 0 0 1 0-6h1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 8h3M10 12h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+        <symbol id="i-curse" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5c-3 4-3 13 0 17M12 3.5c3 4 3 13 0 17M3.5 12h17" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    </svg>
+
+    <!-- ================= HEADER ================= -->
     <header id="siteHeader" class="site-header">
-        <button class="brand" data-tab="home" aria-label="Infinite Archive, home">
-            <img src="/assets/svg/logo.svg" alt="">
-            <span class="wordmark">Infinite <em>Archive</em></span>
-        </button>
-        <nav id="nav" class="nav" aria-label="Sections">
-            <button class="nav-tab" data-tab="home">Home</button>
-            <button class="nav-tab" data-tab="about">About</button>
-            <button class="nav-tab" data-tab="starts">Ways In</button>
-            <button class="nav-tab" data-tab="quickstart">Quickstart</button>
-            <button class="nav-tab" data-tab="items">Archive</button>
-            <button class="nav-tab" data-tab="curses">Tome</button>
-            <button class="nav-tab" data-tab="build">Codex</button>
-            <button class="nav-tab" data-tab="search">Catalogue</button>
-        </nav>
-        <button id="optionsButton" class="gear" title="Options" aria-label="Open options">&#9881;</button>
+        <div class="header-inner">
+            <button class="brand" data-tab="home" aria-label="Infinite Archive, home">
+                <img src="/assets/svg/logo.svg" alt="">
+                <span class="wordmark">Infinite <em>Archive</em></span>
+            </button>
+            <nav id="nav" class="nav" aria-label="Sections">
+                <button class="nav-tab" data-tab="draw"><svg class="icon"><use href="#i-draw"/></svg><span>Draw</span></button>
+                <button class="nav-tab" data-tab="quickstart"><svg class="icon"><use href="#i-quick"/></svg><span>Quickstart</span></button>
+                <button class="nav-tab" data-tab="build"><svg class="icon"><use href="#i-codex"/></svg><span>Codex</span></button>
+                <button class="nav-tab" data-tab="search"><svg class="icon"><use href="#i-search"/></svg><span>Catalogue</span></button>
+                <button class="nav-tab" data-tab="guide"><svg class="icon"><use href="#i-guide"/></svg><span>Guide</span></button>
+            </nav>
+            <div class="header-tools">
+                <button class="codex-pill" data-tab="build" title="Open the current codex">
+                    <span class="dim">Codex</span> <strong class="current-build-name">default</strong>
+                </button>
+                <button id="themeToggle" class="icon-btn" title="Switch light / dark" aria-label="Switch between light and dark">
+                    <svg class="icon show-dark"><use href="#i-sun"/></svg><svg class="icon show-light"><use href="#i-moon"/></svg>
+                </button>
+                <button id="optionsButton" class="icon-btn" title="Options" aria-label="Open options"><svg class="icon"><use href="#i-gear"/></svg></button>
+            </div>
+        </div>
     </header>
 
     <!-- ================= OPTIONS DIALOG ================= -->
-    <div id="drawerBackdrop" class="drawer-backdrop"></div>
-    <aside id="optionsMenu" class="dialog" aria-label="Options">
+    <dialog id="optionsMenu" class="dialog" aria-labelledby="optionsTitle">
         <header class="dialog-head">
-            <span class="title">Options</span>
-            <button id="optionsClose" class="seal-close" aria-label="Close options"></button>
+            <h2 id="optionsTitle">Options</h2>
+            <button id="optionsClose" class="icon-btn" aria-label="Close options"><svg class="icon"><use href="#i-close"/></svg></button>
         </header>
         <div class="dialog-body">
-            <fieldset class="group">
-                <legend>Appearance</legend>
-                <div class="form-grid">
-                    <label for="optionsThemeSelector">Theme</label>
-                    <select id="optionsThemeSelector">
-                        <option value="archive">Archive (parchment and brass)</option>
-                        <option value="luna">Luna (XP blue)</option>
-                        <option value="olive">Olive Green (XP)</option>
-                        <option value="silver">Silver (XP)</option>
-                        <option value="classic">Classic (98 grey)</option>
-                        <option value="midnight">Midnight (dark)</option>
-                    </select>
+            <section class="opt-group">
+                <h3>Appearance</h3>
+                <div class="opt-row">
+                    <span>Theme</span>
+                    <div class="seg" id="themeSwitch" role="group" aria-label="Theme">
+                        <button data-theme-choice="system">System</button>
+                        <button data-theme-choice="light">Light</button>
+                        <button data-theme-choice="dark">Dark</button>
+                    </div>
                 </div>
-                <label class="check-row"><input id="optionsBackgroundToggle" type="checkbox" value="backgroundImage" checked> Show the starfield background</label>
-            </fieldset>
-            <fieldset id="contentOptions" class="group">
-                <legend>Content</legend>
-                <label class="check-row"><input type="checkbox" id="nsfwCheckbox" name="nsfwCheckbox"> Include NSFW scrolls and curses</label>
-                <label class="check-row"><input type="checkbox" id="nsfwOnlyCheckbox" name="nsfwOnlyCheckbox"> NSFW only</label>
-                <p class="hint">The NORMAL / PG-13 / R-18+ lights on the archive set the same thing.</p>
-            </fieldset>
-            <fieldset class="group">
-                <legend>Codices</legend>
-                <p class="hint">A codex is a saved character: the scrolls and curses you keep together.</p>
-                <div id="optionsBuilds" class="form-grid">
-                    <label for="optionsBuildSelector">Current codex</label>
-                    <select id="optionsBuildSelector"><!-- populated by javascript --></select>
-                    <label for="optionsBuildsNewName">New codex</label>
-                    <input type="text" id="optionsBuildsNewName" placeholder="Type a name and press Enter">
+                <label class="switch-row"><span>Starfield behind the page</span><input id="optionsBackgroundToggle" type="checkbox" class="switch" checked></label>
+            </section>
+            <section class="opt-group">
+                <h3>Content</h3>
+                <div class="opt-row">
+                    <span>Scrolls and curses</span>
+                    <div class="seg content-seg" role="group" aria-label="Content">
+                        <button data-content-mode="normal" title="No NSFW entries">Normal</button>
+                        <button data-content-mode="pg13" title="NSFW entries included">PG-13</button>
+                        <button data-content-mode="r18" title="NSFW entries only">R-18+</button>
+                    </div>
                 </div>
-                <div id="optionsBuildsDelete">
-                    <button id="optionsBuildsDeleteButton" class="btn danger">Delete current codex</button>
-                </div>
-            </fieldset>
-            <div class="dialog-buttons">
-                <button id="optionsOk" class="btn primary">OK</button>
-            </div>
+                <p class="hint">Normal hides NSFW entries, PG-13 mixes them in, R-18+ shows nothing else. The same switch sits on the Draw page.</p>
+            </section>
+            <section class="opt-group">
+                <h3>Codices</h3>
+                <p class="hint">Codices are managed on the <button class="link" data-tab="build" data-close-options>Codex</button> page.</p>
+            </section>
         </div>
-    </aside>
+    </dialog>
 
-    <main>
+    <!-- ================= DETAIL DIALOG (a full card for any table row) ================= -->
+    <dialog id="detailDialog" class="dialog detail" aria-label="Details">
+        <button id="detailClose" class="icon-btn detail-close" aria-label="Close"><svg class="icon"><use href="#i-close"/></svg></button>
+        <div id="detailSlot"></div>
+    </dialog>
+
+    <main id="main">
         <!-- ================= HOME ================= -->
         <section id="home" class="tabcontent page">
-            <div class="page-body">
-                <div class="hero">
-                    <img class="hero-logo" src="/assets/svg/logo.svg" alt="">
-                    <h1>The Infinite Archive</h1>
-                    <p class="lede">Somewhere past the last shelf of the last library there is an archive with no end.
-                        Every power anyone ever imagined is written on a scroll inside it, and you have been handed
-                        a key.</p>
-                    <p class="lede muted">Draw a scroll and it gives up its secret. An ability is learned the moment you
-                        read it. A trait is woven into you by the scroll's own magic. Words of summoning lift off the
-                        page and call a companion, a weapon, a vehicle, or a whole world into being. The archive
-                        decides what you find. What you do with it is yours.</p>
-                    <div class="hero-actions">
-                        <button class="btn primary big" data-tab="items">Draw a scroll</button>
-                        <button class="btn big" data-tab="quickstart">Quickstart a character</button>
-                        <button class="btn big" data-tab="about">How it works</button>
-                    </div>
+            <div class="hero">
+                <div class="hero-glow" aria-hidden="true"></div>
+                <img class="hero-logo" src="/assets/svg/logo.svg" alt="">
+                <p class="eyebrow">Past the last shelf of the last library</p>
+                <h1>The Infinite Archive</h1>
+                <p class="lede">Somewhere past the last shelf of the last library there is an archive with no end.
+                    Every power anyone ever imagined is written on a scroll inside it, and you have been handed a key.</p>
+                <div class="hero-actions">
+                    <button class="btn primary big" data-tab="draw"><svg class="icon"><use href="#i-draw"/></svg>Draw a scroll</button>
+                    <button class="btn big" data-tab="quickstart"><svg class="icon"><use href="#i-quick"/></svg>Quickstart a character</button>
+                </div>
+                <div class="key-strip" aria-hidden="true">
+                    <img src="/assets/svg/tokens/1_star.svg" alt=""><img src="/assets/svg/tokens/2_star.svg" alt=""><img src="/assets/svg/tokens/3_star.svg" alt=""><img src="/assets/svg/tokens/4_star.svg" alt=""><img src="/assets/svg/tokens/5_star.svg" alt=""><img src="/assets/svg/tokens/6_star.svg" alt=""><img src="/assets/svg/tokens/7_star.svg" alt=""><img src="/assets/svg/tokens/ex_star.svg" alt="">
                 </div>
             </div>
-        </section>
 
-        <!-- ================= ABOUT ================= -->
-        <section id="about" class="tabcontent page">
-            <header class="page-head">
-                <h1>How the Archive Works</h1><p>Stats, keys, what each kind of scroll does, and how rank is reckoned.</p>
-            </header>
-            <div class="page-body card-grid">
-
-                <fieldset class="group">
-                    <legend>Stats</legend>
-                    <p class="intro">Every scroll is measured on eight stats. Each one is a different way of leaving a
-                        mark on the world.</p>
-                    <dl class="def-list">
-                        <div><dt class="pinkColor">Magic</dt><dd>Influence through the mysterious and the supernatural</dd></div>
-                        <div><dt class="lightPinkColor">Memetic</dt><dd>Influence through ideas, images, and sounds</dd></div>
-                        <div><dt class="brownColor">Might</dt><dd>Influence through physical strength and durability</dd></div>
-                        <div><dt class="orangeColor">Mind</dt><dd>Influence through intelligence and mental flexibility</dd></div>
-                        <div><dt class="lightGreenColor">Motion</dt><dd>Influence through speed, agility, and dexterity</dd></div>
-                        <div><dt class="cyanColor">Moxie</dt><dd>Influence through charisma and force of personality</dd></div>
-                        <div><dt class="magentaColor">Mutation</dt><dd>Influence through deviation from what a body should be</dd></div>
-                        <div><dt class="redColor">Myth</dt><dd>Influence through history, legend, and cultural weight</dd></div>
-                    </dl>
-                </fieldset>
-
-                <fieldset class="group">
-                    <legend>Keys</legend>
-                    <p class="intro">You open the archive with keys, and the metal of the key tells you how deep into
-                        the stacks it reaches: each level draws from three neighbouring ranks of scroll. Keys are
-                        not given, they are earned by deeds in your story. Decide what your character did, decide
-                        how big it was, and the archive hands over the matching key. Putting the darkest key next
-                        to the humblest one is deliberate.</p>
-                    <dl class="def-list">
-                        <div><dt class="Frank">1 Star (F–D)</dt><dd><strong>Iron.</strong>&nbsp;Black, matte, a little worn. A hard day's work: anything a determined person can finish with effort and no help</dd></div>
-                        <div><dt class="Erank">2 Star (E–C)</dt><dd><strong>Silver.</strong>&nbsp;Beyond most people: a feat the town talks about for a week</dd></div>
-                        <div><dt class="Drank">3 Star (D–B)</dt><dd><strong>Blue steel.</strong>&nbsp;Dangerous: something that could plausibly kill you, done anyway</dd></div>
-                        <div><dt class="Crank">4 Star (C–A)</dt><dd><strong>Gold.</strong>&nbsp;Heroic: surviving what should not be survivable, or ending what should not be endable</dd></div>
-                        <div><dt class="Brank">5 Star (B–S)</dt><dd><strong>Platinum.</strong>&nbsp;White and bright, the last key that still looks like something a jeweller could make. Something a city remembers for a generation</dd></div>
-                        <div><dt class="Arank">6 Star (A–SS)</dt><dd><strong>Crystal.</strong>&nbsp;Clear as glass, with light moving slowly inside it like a flame seen through water. Something a nation writes into its history</dd></div>
-                        <div><dt class="SSrank">7 Star (S–SSS)</dt><dd><strong>Star-iron.</strong>&nbsp;Black like the iron key, but full of tiny points of light, a piece of the night sky cut into a key. Something the whole world feels happen</dd></div>
-                        <div><dt class="EXrank">EX Star (SS–EX)</dt><dd><strong>No key at all.</strong>&nbsp;A key-shaped hole in the air, with light coming through from whatever is on the other side. You turn the gap. Something reality itself has to adjust to</dd></div>
-                    </dl>
-                </fieldset>
-
-                <fieldset class="group">
-                    <legend>What a scroll does when you read it</legend>
-                    <p class="intro">Scrolls come in twelve kinds. The kind decides how the archive delivers the
-                        gift.</p>
-                    <dl class="def-list">
-                        <span class="section-label">Learned: the scroll teaches you</span>
-                        <div><dt class="brownColor">Ability</dt><dd>An active power you can call on at will</dd></div>
-                        <div><dt class="orangeColor">Skill</dt><dd>Knowledge and reflexes, poured in all at once (and teachable to others)</dd></div>
-                        <span class="section-label">Woven: the scroll's magic rewrites you</span>
-                        <div><dt class="magentaColor">Passive</dt><dd>A trait that is always on</dd></div>
-                        <div><dt class="lightPinkColor">Race</dt><dd>A change of species or kind</dd></div>
-                        <span class="section-label">Summoned: words of power leave the page</span>
-                        <div><dt class="greyColor">Arsenal</dt><dd>Weapons, shields, and the like</dd></div>
-                        <div><dt class="tealColor">Consumable</dt><dd>One use, sometimes restocking</dd></div>
-                        <div><dt class="amberColor">Familiar</dt><dd>A being or a person who answers the summons</dd></div>
-                        <div><dt class="darkBlueColor">Farmable</dt><dd>Something you can grow or duplicate with time and effort</dd></div>
-                        <div><dt class="darkGreenColor">Novelty</dt><dd>No use in a fight; delightful anyway</dd></div>
-                        <div><dt class="cyanColor">Vehicle</dt><dd>Something to drive, pilot, or ride</dd></div>
-                        <div><dt class="redColor">Wearable</dt><dd>Clothes, armour, accessories</dd></div>
-                        <div><dt class="goldColor">World</dt><dd>The words spread past you and change the world itself</dd></div>
-                    </dl>
-                </fieldset>
-
-                <fieldset class="group">
-                    <legend>Modifiers</legend>
-                    <p class="intro">A scroll may carry a modifier: how its gift grows, whether it restocks, whether it
-                        comes back when lost, and whether it can be given away.</p>
-                    <dl class="def-list">
-                        <span class="section-label">Growth type</span>
-                        <div><dt class="lightGreenColor">Time</dt><dd>Grows on its own as time passes</dd></div>
-                        <div><dt class="greyColor">Train</dt><dd>Grows with practice</dd></div>
-                        <div><dt class="brownColor">Ticket</dt><dd>Grows with the number of keys you have ever used</dd></div>
-                        <div><dt class="orangeColor">Trust</dt><dd>Grows as a bond deepens</dd></div>
-                        <div><dt class="cyanColor">Tinker</dt><dd>Grows through upgrades and attachments</dd></div>
-                        <div><dt class="redColor">Twin</dt><dd>Grows when you draw the same scroll again</dd></div>
-                        <span class="section-label">Growth rate</span>
-                        <div><dt class="Frank">Snail</dt><dd>Decades per rank</dd></div>
-                        <div><dt class="Erank">Slow</dt><dd>Years per rank</dd></div>
-                        <div><dt class="Drank">Medium</dt><dd>Months per rank</dd></div>
-                        <div><dt class="Crank">Fast</dt><dd>Weeks per rank</dd></div>
-                        <div><dt class="Brank">Hyper</dt><dd>Days per rank</dd></div>
-                        <span class="section-label">Restock</span>
-                        <div><dt class="highlightColor">Timer</dt><dd>A consumable returns to the scroll after anywhere from half an hour to a decade</dd></div>
-                        <span class="section-label">Return</span>
-                        <div><dt class="Arank">Auto</dt><dd>Comes back almost at once when lost</dd></div>
-                        <div><dt class="Srank">Timer</dt><dd>Comes back one to twenty-four hours after being lost</dd></div>
-                        <div><dt class="SSrank">Manual</dt><dd>Tells you where it is; you fetch it</dd></div>
-                        <div><dt class="SSSrank">N/A</dt><dd>Lost is lost</dd></div>
-                        <span class="section-label">Other</span>
-                        <div><dt class="cyanColor">Gift</dt><dd>Can be given to someone else</dd></div>
-                        <div><dt class="pinkColor">NSFW</dt><dd>Hidden unless you turn it on in Options</dd></div>
-                    </dl>
-                </fieldset>
-
-                <fieldset class="group">
-                    <legend>Stat values</legend>
-                    <p class="intro">Each stat is a letter from F to EX, and each letter is worth a number. The eight
-                        numbers add up to the scroll's total, and the total decides its rank.</p>
-                    <dl class="def-list">
-                        <div><dt class="Frank">F</dt><dd>Below an average person <span class="num">0</span></dd></div>
-                        <div><dt class="Erank">E</dt><dd>An average person <span class="num">1</span></dd></div>
-                        <div><dt class="Drank">D</dt><dd>Breaks a building <span class="num">5</span></dd></div>
-                        <div><dt class="Crank">C</dt><dd>Breaks a city <span class="num">10</span></dd></div>
-                        <div><dt class="Brank">B</dt><dd>Breaks a region <span class="num">50</span></dd></div>
-                        <div><dt class="Arank">A</dt><dd>Breaks a country <span class="num">100</span></dd></div>
-                        <div><dt class="Srank">S</dt><dd>Breaks a continent <span class="num">500</span></dd></div>
-                        <div><dt class="SSrank">SS</dt><dd>Breaks a planet <span class="num">1,000</span></dd></div>
-                        <div><dt class="SSSrank">SSS</dt><dd>Breaks a galaxy <span class="num">5,000</span></dd></div>
-                        <div><dt class="EXrank">EX</dt><dd>Breaks a universe <span class="num">10,000</span></dd></div>
-                    </dl>
-                </fieldset>
-
-                <fieldset class="group">
-                    <legend>Rank from the total</legend>
-                    <p class="intro">Add up the eight stat values. The total gives the scroll its rank.</p>
-                    <dl class="def-list">
-                        <div><dt class="Frank">F</dt><dd>Total of <span class="num">0</span></dd></div>
-                        <div><dt class="Erank">E</dt><dd>Total of <span class="num">5</span></dd></div>
-                        <div><dt class="Drank">D</dt><dd>Total of <span class="num">10</span></dd></div>
-                        <div><dt class="Crank">C</dt><dd>Total of <span class="num">50</span></dd></div>
-                        <div><dt class="Brank">B</dt><dd>Total of <span class="num">100</span></dd></div>
-                        <div><dt class="Arank">A</dt><dd>Total of <span class="num">500</span></dd></div>
-                        <div><dt class="Srank">S</dt><dd>Total of <span class="num">1,000</span></dd></div>
-                        <div><dt class="SSrank">SS</dt><dd>Total of <span class="num">5,000</span></dd></div>
-                        <div><dt class="SSSrank">SSS</dt><dd>Total of <span class="num">10,000</span></dd></div>
-                        <div><dt class="EXrank">EX</dt><dd>Total of <span class="num">50,000</span></dd></div>
-                    </dl>
-                </fieldset>
+            <div class="home-grid">
+                <button class="home-card" data-tab="draw">
+                    <svg class="icon"><use href="#i-scroll"/></svg>
+                    <h3>Draw</h3>
+                    <p>Pick a key and the shelves to reach into. A scroll of power comes back, or a page from the tome of curses that pays out keys.</p>
+                </button>
+                <button class="home-card" data-tab="quickstart">
+                    <svg class="icon"><use href="#i-quick"/></svg>
+                    <h3>Quickstart</h3>
+                    <p>Choose how the key reached your character and how many curses to bind. The archive draws everything else in one go.</p>
+                </button>
+                <button class="home-card" data-tab="build">
+                    <svg class="icon"><use href="#i-codex"/></svg>
+                    <h3>Codex</h3>
+                    <p>A character sheet with a portrait, a name, a world, and every scroll and curse they hold. Export it as text.</p>
+                </button>
+                <button class="home-card" data-tab="search">
+                    <svg class="icon"><use href="#i-search"/></svg>
+                    <h3>Catalogue</h3>
+                    <p>Search all of it by name, series, text, or any stat. Keep anything you find.</p>
+                </button>
             </div>
+
+            <p class="home-more">Draw a scroll and it gives up its secret. An ability is learned the moment you read it. A trait is woven
+                into you by the scroll's own magic. Words of summoning lift off the page and call a companion, a weapon, a vehicle,
+                or a whole world into being. The archive decides what you find. What you do with it is yours.
+                <button class="link" data-tab="guide">Read the guide</button></p>
         </section>
 
-        <!-- ================= WAYS IN ================= -->
-        <section id="starts" class="tabcontent page">
+        <!-- ================= DRAW (scrolls + curses) ================= -->
+        <section id="draw" class="tabcontent page">
             <header class="page-head">
-                <h1>Ways In</h1><p>How your character came to hold a key, and what they start with.</p>
+                <div>
+                    <h1>Draw</h1>
+                    <p>Choose a key, narrow the shelves if you like, and draw. Or read a curse and bind it for keys.</p>
+                </div>
+                <div class="seg big" id="drawModeSwitch" role="group" aria-label="What to draw">
+                    <button data-draw-mode="items"><svg class="icon"><use href="#i-scroll"/></svg>Scrolls</button>
+                    <button data-draw-mode="curses"><svg class="icon"><use href="#i-curse"/></svg>Curses</button>
+                </div>
             </header>
-            <div class="page-body card-grid">
-                <fieldset class="group prose">
-                    <legend>Finding the archive</legend>
-                    <p>The archive is a framework for a story, not a rulebook. Run it however the story needs. The
-                        one thing every character shares is a first handful of keys, and how many depends on how the
-                        key reached them.</p>
-                    <div class="option-list">
-                        <div class="option-item">
-                            <h4>Inherited</h4>
-                            <p>The key turned up among a dead relative's effects, with no note and no explanation.
-                                You have the keys they never used: two 3-star keys and one 2-star key.</p>
+
+            <div class="draw-layout" id="drawLayout" data-mode="items">
+                <aside class="panel draw-panel">
+                    <div class="for-items">
+                        <h3 class="panel-label">Key <span class="dim" id="keyName">Any shelf</span></h3>
+                        <div class="key-grid" id="keyGrid">
+                            <button class="key-pick" data-star="0"><img src="/assets/svg/tokens/randomticket.svg" alt=""><span>Any<small>all ranks</small></span></button>
+                            <button class="key-pick" data-star="1"><img src="/assets/svg/tokens/1_star.svg" alt=""><span>Iron<small>1★ F–D</small></span></button>
+                            <button class="key-pick" data-star="2"><img src="/assets/svg/tokens/2_star.svg" alt=""><span>Silver<small>2★ E–C</small></span></button>
+                            <button class="key-pick" data-star="3"><img src="/assets/svg/tokens/3_star.svg" alt=""><span>Blue steel<small>3★ D–B</small></span></button>
+                            <button class="key-pick" data-star="4"><img src="/assets/svg/tokens/4_star.svg" alt=""><span>Gold<small>4★ C–A</small></span></button>
+                            <button class="key-pick" data-star="5"><img src="/assets/svg/tokens/5_star.svg" alt=""><span>Platinum<small>5★ B–S</small></span></button>
+                            <button class="key-pick" data-star="6"><img src="/assets/svg/tokens/6_star.svg" alt=""><span>Crystal<small>6★ A–SS</small></span></button>
+                            <button class="key-pick" data-star="7"><img src="/assets/svg/tokens/7_star.svg" alt=""><span>Star-iron<small>7★ S–SSS</small></span></button>
+                            <button class="key-pick" data-star="8"><img src="/assets/svg/tokens/ex_star.svg" alt=""><span>The gap<small>EX★ SS–EX</small></span></button>
                         </div>
-                        <div class="option-item">
-                            <h4>Chosen at random</h4>
-                            <p>The archive picks someone every so often, from everyone alive, for no reason anyone
-                                has found. You got the letter. One 4-star key, one 2-star key, one 1-star key.</p>
-                        </div>
-                        <div class="option-item">
-                            <h4>Stolen</h4>
-                            <p>It belonged to a collector, a wizard, a vault. Now it belongs to you, and someone
-                                may want it back. Keys are small and plentiful on the way out: three 2-star keys
-                                and two 1-star keys.</p>
-                        </div>
-                        <div class="option-item">
-                            <h4>Sent</h4>
-                            <p>A faction that knows what the shelves hold put the key in your hand and told you what
-                                to bring back. They equipped you well: one 4-star key and one 3-star key, and they
-                                will be expecting results.</p>
-                        </div>
-                        <div class="option-item">
-                            <h4>Died</h4>
-                            <p>The archive is what came after. You woke on its floor with a key in your fist and a
-                                second life to spend. Three 3-star keys.</p>
+
+                        <h3 class="panel-label">Shelves</h3>
+                        <div id="itemsCategoryFilter" class="shelf-chips">
+                            <label class="shelf all"><input type="checkbox" id="itemsCategoryFilterAll" checked value="all"><span>All shelves</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="ability"><img src="/assets/svg/balls/ability.svg" alt=""><span>Ability</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="arsenal"><img src="/assets/svg/balls/arsenal.svg" alt=""><span>Arsenal</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="consumable"><img src="/assets/svg/balls/consumable.svg" alt=""><span>Consumable</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="familiar"><img src="/assets/svg/balls/familiar.svg" alt=""><span>Familiar</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="farmable"><img src="/assets/svg/balls/farmable.svg" alt=""><span>Farmable</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="novelty"><img src="/assets/svg/balls/novelty.svg" alt=""><span>Novelty</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="passive"><img src="/assets/svg/balls/passive.svg" alt=""><span>Passive</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="race"><img src="/assets/svg/balls/race.svg" alt=""><span>Race</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="skill"><img src="/assets/svg/balls/skill.svg" alt=""><span>Skill</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="vehicle"><img src="/assets/svg/balls/vehicle.svg" alt=""><span>Vehicle</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="wearable"><img src="/assets/svg/balls/wearable.svg" alt=""><span>Wearable</span></label>
+                            <label class="shelf"><input type="checkbox" checked value="world"><img src="/assets/svg/balls/world.svg" alt=""><span>World</span></label>
                         </div>
                     </div>
-                    <p class="mt-1">Want it all drawn for you? Open the
-                        <button class="btn small" data-tab="quickstart">Quickstart</button> wizard.</p>
-                </fieldset>
 
-                <div class="stack">
-                    <fieldset class="group prose">
-                        <legend>On drawing honestly</legend>
-                        <p>Nobody is watching. If a draw would wreck the story, draw again, or pick the scroll you
-                            needed and call it luck. The archive is here to make writing more fun, not to referee
-                            it.</p>
-                    </fieldset>
-                    <fieldset class="group prose">
-                        <legend>Curses</legend>
-                        <p>Beside the archive sits a tome of curses. Read one and bind it to your character, at the
-                            start of the story or whenever things need shaking up, and the tome pays you in keys. The
-                            worse the curse, the better the keys. Bind too many and you will be absurdly powerful
-                            before chapter two, which is less fun than it sounds.</p>
-                    </fieldset>
-                    <fieldset class="group prose">
-                        <legend>Using this in your work</legend>
-                        <p>Write whatever you like with it. A mention of the Infinite Archive somewhere is appreciated
-                            and nothing more is asked. The site's code is free software under the GPL, so you can host
-                            your own copy too.</p>
-                    </fieldset>
+                    <div class="for-curses">
+                        <h3 class="panel-label">The tome</h3>
+                        <p class="panel-text">Every page holds a curse. Bind one to your codex and the tome pays you in keys: the worse
+                            the curse, the better the keys. Bind too many and the story is over before it starts.</p>
+                    </div>
+
+                    <h3 class="panel-label">Content</h3>
+                    <div class="seg content-seg full" role="group" aria-label="Content">
+                        <button data-content-mode="normal" title="No NSFW entries">Normal</button>
+                        <button data-content-mode="pg13" title="NSFW entries included">PG-13</button>
+                        <button data-content-mode="r18" title="NSFW entries only">R-18+</button>
+                    </div>
+
+                    <div class="draw-action">
+                        <p class="pool-count" id="poolCount"></p>
+                        <button id="itemRollButton" class="btn primary draw-btn for-items"><svg class="icon"><use href="#i-draw"/></svg>Draw a scroll</button>
+                        <button id="cursesRollButton" class="btn curse draw-btn for-curses"><svg class="icon"><use href="#i-curse"/></svg>Read a curse</button>
+                    </div>
+                </aside>
+
+                <div class="stage-column">
+                    <!-- a stage is idle, then rolling (names flicker past on the reel), then open (the card, with a burst) -->
+                    <div class="stage idle for-items" id="itemStage">
+                        <div class="stage-idle">
+                            <svg class="icon"><use href="#i-scroll"/></svg>
+                            <strong>The archive is closed</strong>
+                            <span>Choose a key, then draw.</span>
+                        </div>
+                        <div class="reel" id="itemReel"></div>
+                        <div class="burst" id="itemBurst"></div>
+                        <div class="stage-card" id="itemCardSlot"></div>
+                    </div>
+                    <div class="stage idle curse-stage for-curses" id="curseStage">
+                        <div class="stage-idle">
+                            <svg class="icon"><use href="#i-curse"/></svg>
+                            <strong>The tome is shut</strong>
+                            <span>Read a page to see what it holds.</span>
+                        </div>
+                        <div class="reel" id="curseReel"></div>
+                        <div class="burst" id="curseBurst"></div>
+                        <div class="stage-card" id="curseCardSlot"></div>
+                    </div>
+
+                    <section class="panel table-group for-items">
+                        <header class="panel-head">
+                            <h2>Drawn this session <span class="count" data-count-for="itemRollHistoryTable">0</span></h2>
+                            <span class="dim">Select a row to see the whole scroll</span>
+                        </header>
+                        <div class="table-wrap">
+                            <!-- every table.dataTable gets its header from termRenderer.buildTableHeader():
+                                 data-kind picks items or curses, data-columns="compact" the short column set,
+                                 data-extra adds a trailing button column -->
+                            <table id="itemRollHistoryTable" class="dataTable itemsTable historyTable" data-kind="items" data-columns="compact" data-extra="Keep"></table>
+                        </div>
+                    </section>
+                    <section class="panel table-group for-curses">
+                        <header class="panel-head">
+                            <h2>Read this session <span class="count" data-count-for="curseRollHistoryTable">0</span></h2>
+                            <span class="dim">Select a row to see the whole page</span>
+                        </header>
+                        <div class="table-wrap">
+                            <table id="curseRollHistoryTable" class="dataTable cursesTable historyTable" data-kind="curses" data-columns="compact" data-extra="Bind"></table>
+                        </div>
+                    </section>
                 </div>
-
-                <fieldset class="group prose">
-                    <legend>Abilities, skills, and how far they go</legend>
-                    <p>An ability is anything you have to actively use. If you like structure, give your character
-                        ability slots: start with one and add another for every five abilities drawn. If you don't,
-                        ignore that entirely.</p>
-                    <p>Some skill scrolls name a level. This is what the levels mean:</p>
-                    <dl class="def-list">
-                        <div><dt class="darkGreenColor">Beginner</dt><dd>A passing knowledge and perhaps a year of on-and-off practice</dd></div>
-                        <div><dt class="darkGreenColor">Apprentice</dt><dd>About five years of solid basic training</dd></div>
-                        <div><dt class="darkGreenColor">Journeyman</dt><dd>About ten years of dedicated training</dd></div>
-                        <div><dt class="darkGreenColor">Expert</dt><dd>Roughly twenty-five years of practical experience, all at once</dd></div>
-                        <div><dt class="darkGreenColor">Master</dt><dd>A century of skill, written straight into you</dd></div>
-                        <div><dt class="darkGreenColor">Grandmaster</dt><dd>A master of masters; nobody alive can match you</dd></div>
-                        <div><dt class="darkGreenColor">Divine</dt><dd>You invented the field, and everyone else is imitating you badly</dd></div>
-                    </dl>
-                </fieldset>
             </div>
         </section>
 
         <!-- ================= QUICKSTART ================= -->
         <section id="quickstart" class="tabcontent page">
             <header class="page-head">
-                <h1>Quickstart</h1><p>Pick how the key reached you and how many curses to bind; the archive draws the rest.</p>
+                <div>
+                    <h1>Quickstart</h1>
+                    <p>Pick how the key reached you and how many curses to bind. The archive draws the rest.</p>
+                </div>
             </header>
-            <div class="page-body stack">
-                <fieldset class="group">
-                    <legend><span class="step-num">1</span> How did the key reach you?</legend>
+
+            <div class="qs-steps">
+                <section class="panel qs-step">
+                    <h2><span class="step-num">1</span> How did the key reach you?</h2>
                     <div class="start-grid" id="qsStartGrid">
                         <label class="start-option">
                             <input type="radio" name="qsStart" value="inherited" checked>
                             <h4>Inherited</h4>
                             <p>Found among a dead relative's effects, unexplained.</p>
-                            <span class="ticket-chip">2&times; 3&#9733;</span> <span class="ticket-chip">1&times; 2&#9733;</span>
+                            <span class="keys"><span class="ticket-chip">2&times; 3&#9733;</span><span class="ticket-chip">1&times; 2&#9733;</span></span>
                         </label>
                         <label class="start-option">
                             <input type="radio" name="qsStart" value="chosen">
                             <h4>Chosen at random</h4>
                             <p>The archive picks someone now and then. It picked you.</p>
-                            <span class="ticket-chip">1&times; 4&#9733;</span> <span class="ticket-chip">1&times; 2&#9733;</span> <span class="ticket-chip">1&times; 1&#9733;</span>
+                            <span class="keys"><span class="ticket-chip">1&times; 4&#9733;</span><span class="ticket-chip">1&times; 2&#9733;</span><span class="ticket-chip">1&times; 1&#9733;</span></span>
                         </label>
                         <label class="start-option">
                             <input type="radio" name="qsStart" value="stolen">
                             <h4>Stolen</h4>
                             <p>It was someone else's. They may want it back.</p>
-                            <span class="ticket-chip">3&times; 2&#9733;</span> <span class="ticket-chip">2&times; 1&#9733;</span>
+                            <span class="keys"><span class="ticket-chip">3&times; 2&#9733;</span><span class="ticket-chip">2&times; 1&#9733;</span></span>
                         </label>
                         <label class="start-option">
                             <input type="radio" name="qsStart" value="sent">
                             <h4>Sent</h4>
                             <p>A faction equipped you and expects something back.</p>
-                            <span class="ticket-chip">1&times; 4&#9733;</span> <span class="ticket-chip">1&times; 3&#9733;</span>
+                            <span class="keys"><span class="ticket-chip">1&times; 4&#9733;</span><span class="ticket-chip">1&times; 3&#9733;</span></span>
                         </label>
                         <label class="start-option">
                             <input type="radio" name="qsStart" value="died">
                             <h4>Died</h4>
                             <p>The archive is what came after. A second life to spend.</p>
-                            <span class="ticket-chip">3&times; 3&#9733;</span>
+                            <span class="keys"><span class="ticket-chip">3&times; 3&#9733;</span></span>
                         </label>
                     </div>
-                </fieldset>
+                </section>
 
-                <fieldset class="group">
-                    <legend><span class="step-num">2</span> How many curses to bind?</legend>
-                    <p class="intro">Each curse pays out keys by its severity. Too many and the story is over before it
-                        starts.</p>
-                    <div class="qs-curse-row">
-                        <input type="range" id="qsCurseCount" min="0" max="8" value="2" step="1" aria-label="Number of curses">
-                        <output id="qsCurseCountOut" for="qsCurseCount">2</output>
-                        <span class="dim">curses</span>
-                    </div>
-                </fieldset>
+                <div class="qs-row">
+                    <section class="panel qs-step">
+                        <h2><span class="step-num">2</span> How many curses to bind?</h2>
+                        <p class="panel-text">Each curse pays out keys by its severity. Too many and the story is over before it starts.</p>
+                        <div class="qs-curse-row">
+                            <input type="range" id="qsCurseCount" min="0" max="8" value="2" step="1" aria-label="Number of curses">
+                            <output id="qsCurseCountOut" for="qsCurseCount">2</output>
+                            <span class="dim">curses</span>
+                        </div>
+                    </section>
+                    <section class="panel qs-step">
+                        <h2><span class="step-num">3</span> Draw</h2>
+                        <p class="panel-text">Uses your content setting. The key and shelves picked on the Draw page are not applied.</p>
+                        <button id="qsRollButton" class="btn primary big"><svg class="icon"><use href="#i-quick"/></svg>Draw everything</button>
+                    </section>
+                </div>
+            </div>
 
-                <fieldset class="group">
-                    <legend><span class="step-num">3</span> Draw</legend>
+            <div id="qsResults" class="qs-results" hidden>
+                <div class="panel qs-summary-bar">
+                    <div class="qs-summary" id="qsSummary"></div>
                     <div class="row">
-                        <button id="qsRollButton" class="btn primary big">Draw everything</button>
-                        <span class="dim">Respects your content settings. Key and shelf filters from the archive are not applied.</span>
+                        <button id="qsSaveAllButton" class="btn primary">Keep all in codex</button>
+                        <button id="qsRerollButton" class="btn">Draw again</button>
                     </div>
-                </fieldset>
-
-                <div id="qsResults" class="qs-results" hidden>
-                    <fieldset class="group">
-                        <legend>Your start</legend>
-                        <div class="row between">
-                            <div class="qs-summary" id="qsSummary"></div>
-                            <div class="row">
-                                <button id="qsSaveAllButton" class="btn primary">Keep all in codex</button>
-                                <button id="qsRerollButton" class="btn">Draw again</button>
-                            </div>
-                        </div>
-                    </fieldset>
-                    <div id="qsCursesSection">
-                        <h2>Curses</h2>
-                        <div class="qs-cards" id="qsCurseCards"></div>
-                    </div>
-                    <div id="qsItemsSection">
-                        <h2>Scrolls</h2>
-                        <div class="qs-cards" id="qsItemCards"></div>
-                    </div>
+                </div>
+                <div id="qsCursesSection">
+                    <h2 class="section-title">Curses</h2>
+                    <div class="card-grid" id="qsCurseCards"></div>
+                </div>
+                <div id="qsItemsSection">
+                    <h2 class="section-title">Scrolls</h2>
+                    <div class="card-grid" id="qsItemCards"></div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= THE ARCHIVE (items) ================= -->
-        <section id="items" class="tabcontent page">
-            <header class="page-head">
-                <h1>The Archive</h1><p>Choose a key, narrow the shelves if you like, and turn the seal.</p>
-            </header>
-            <div class="page-body">
-                <div class="machine-wrap">
-                    <!-- The archive cabinet is the inline SVG below. Every control is a transparent hotspot laid over
-                         its drawn button; --x/--y/--w/--h are percentages of the cabinet. -->
-                    <div id="itemsMachine" class="machine items-machine">
-                        <svg class="machine-art" viewBox="0 0 1000 947" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="none">
-<defs>
- <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8B5A2B"/><stop offset="1" stop-color="#5C3A1A"/></linearGradient>
- <linearGradient id="woodDark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A2E14"/><stop offset="1" stop-color="#2B1B10"/></linearGradient>
- <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F5E3A6"/><stop offset="0.5" stop-color="#D4AF37"/><stop offset="1" stop-color="#9A7420"/></linearGradient>
- <linearGradient id="parch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3E6C8"/><stop offset="1" stop-color="#E2CFA5"/></linearGradient>
- <radialGradient id="wax" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#F87171"/><stop offset="0.6" stop-color="#B91C1C"/><stop offset="1" stop-color="#7F1D1D"/></radialGradient>
-</defs>
-<rect x="30" y="0" width="940" height="250" fill="url(#woodDark)" stroke="#17100A" stroke-width="4"/>
-<rect x="40" y="8" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(10 96.0 67.0)"><rect x="56.0" y="45.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="56.0" cy="67.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="56.0" cy="67.0" rx="4" ry="12" fill="#B99A62"/><rect x="90.0" y="43.0" width="14" height="48" fill="#6B7280" opacity="0.9"/></g><rect x="155" y="8" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(-7 212.0 68.0)"><rect x="172.0" y="46.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="172.0" cy="68.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="172.0" cy="68.0" rx="4" ry="12" fill="#B99A62"/><rect x="206.0" y="44.0" width="14" height="48" fill="#C026D3" opacity="0.9"/></g><rect x="270" y="8" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(-7 331.0 67.0)"><rect x="291.0" y="45.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="291.0" cy="67.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="291.0" cy="67.0" rx="4" ry="12" fill="#B99A62"/><rect x="325.0" y="43.0" width="14" height="48" fill="#6B7280" opacity="0.9"/></g><rect x="385" y="8" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(-9 435.0 66.0)"><rect x="395.0" y="44.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="395.0" cy="66.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="395.0" cy="66.0" rx="4" ry="12" fill="#B99A62"/><rect x="429.0" y="42.0" width="14" height="48" fill="#EA580C" opacity="0.9"/></g><rect x="500" y="8" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(7 550.0 67.0)"><rect x="510.0" y="45.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="510.0" cy="67.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="510.0" cy="67.0" rx="4" ry="12" fill="#B99A62"/><rect x="544.0" y="43.0" width="14" height="48" fill="#DC2626" opacity="0.9"/></g><rect x="615" y="8" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(-18 671.0 69.0)"><rect x="631.0" y="47.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="631.0" cy="69.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="631.0" cy="69.0" rx="4" ry="12" fill="#B99A62"/><rect x="665.0" y="45.0" width="14" height="48" fill="#15803D" opacity="0.9"/></g><rect x="730" y="8" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(-16 787.0 60.0)"><rect x="747.0" y="38.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="747.0" cy="60.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="747.0" cy="60.0" rx="4" ry="12" fill="#B99A62"/><rect x="781.0" y="36.0" width="14" height="48" fill="#DC2626" opacity="0.9"/></g><rect x="845" y="8" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(11 897.0 62.0)"><rect x="857.0" y="40.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="857.0" cy="62.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="857.0" cy="62.0" rx="4" ry="12" fill="#B99A62"/><rect x="891.0" y="38.0" width="14" height="48" fill="#DC2626" opacity="0.9"/></g><rect x="40" y="128" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(15 94.0 186.0)"><rect x="54.0" y="164.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="54.0" cy="186.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="54.0" cy="186.0" rx="4" ry="12" fill="#B99A62"/><rect x="88.0" y="162.0" width="14" height="48" fill="#C026D3" opacity="0.9"/></g><rect x="155" y="128" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(13 207.0 189.0)"><rect x="167.0" y="167.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="167.0" cy="189.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="167.0" cy="189.0" rx="4" ry="12" fill="#B99A62"/><rect x="201.0" y="165.0" width="14" height="48" fill="#EA580C" opacity="0.9"/></g><rect x="270" y="128" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(11 319.0 189.0)"><rect x="279.0" y="167.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="279.0" cy="189.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="279.0" cy="189.0" rx="4" ry="12" fill="#B99A62"/><rect x="313.0" y="165.0" width="14" height="48" fill="#2563EB" opacity="0.9"/></g><rect x="385" y="128" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(17 444.0 183.0)"><rect x="404.0" y="161.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="404.0" cy="183.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="404.0" cy="183.0" rx="4" ry="12" fill="#B99A62"/><rect x="438.0" y="159.0" width="14" height="48" fill="#CA8A04" opacity="0.9"/></g><rect x="500" y="128" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(2 550.0 190.0)"><rect x="510.0" y="168.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="510.0" cy="190.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="510.0" cy="190.0" rx="4" ry="12" fill="#B99A62"/><rect x="544.0" y="166.0" width="14" height="48" fill="#EA580C" opacity="0.9"/></g><rect x="615" y="128" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(-17 676.0 182.0)"><rect x="636.0" y="160.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="636.0" cy="182.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="636.0" cy="182.0" rx="4" ry="12" fill="#B99A62"/><rect x="670.0" y="158.0" width="14" height="48" fill="#EA580C" opacity="0.9"/></g><rect x="730" y="128" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(7 780.0 188.0)"><rect x="740.0" y="166.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="740.0" cy="188.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="740.0" cy="188.0" rx="4" ry="12" fill="#B99A62"/><rect x="774.0" y="164.0" width="14" height="48" fill="#2563EB" opacity="0.9"/></g><rect x="845" y="128" width="110" height="114" fill="#2B1B10" stroke="#17100A" stroke-width="3"/><g transform="rotate(-14 895.0 183.0)"><rect x="855.0" y="161.0" width="80" height="44" rx="8" fill="#E8D5A8" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="855.0" cy="183.0" rx="10" ry="22" fill="#D9C08C" stroke="#8A6A3A" stroke-width="3"/><ellipse cx="855.0" cy="183.0" rx="4" ry="12" fill="#B99A62"/><rect x="889.0" y="159.0" width="14" height="48" fill="#CA8A04" opacity="0.9"/></g>
-<rect x="30" y="246" width="940" height="650" rx="10" fill="url(#wood)" stroke="#17100A" stroke-width="4"/>
-<rect x="30" y="246" width="940" height="22" fill="#A0733D" stroke="#17100A" stroke-width="3"/>
-<rect x="71" y="251" width="859" height="239" rx="12" fill="url(#brass)" stroke="#3B2A14" stroke-width="3"/>
-<rect x="83" y="263" width="835" height="215" rx="4" fill="url(#parch)"/>
-<rect x="75" y="487" width="258" height="230" rx="12" fill="url(#brass)" stroke="#3B2A14" stroke-width="3"/>
-<rect x="85" y="497" width="238" height="210" rx="6" fill="#2B1B10"/>
-<rect x="344" y="501" width="147" height="50" rx="8" fill="url(#brass)" stroke="#3B2A14" stroke-width="3"/><text x="417" y="535" text-anchor="middle" font-family="Georgia, Times New Roman, serif" font-weight="bold" font-size="19" fill="#2A1B0E">KEEP SCROLL</text><rect x="344" y="571" width="147" height="50" rx="8" fill="url(#brass)" stroke="#3B2A14" stroke-width="3"/><text x="417" y="605" text-anchor="middle" font-family="Georgia, Times New Roman, serif" font-weight="bold" font-size="19" fill="#2A1B0E">COPY SCROLL</text><rect x="344" y="642" width="147" height="50" rx="8" fill="url(#brass)" stroke="#3B2A14" stroke-width="3"/><text x="417" y="676" text-anchor="middle" font-family="Georgia, Times New Roman, serif" font-weight="bold" font-size="24" fill="#2A1B0E">ADJUST</text><rect x="510" y="501" width="147" height="50" rx="8" fill="url(#brass)" stroke="#3B2A14" stroke-width="3"/><text x="584" y="535" text-anchor="middle" font-family="Georgia, Times New Roman, serif" font-weight="bold" font-size="24" fill="#2A1B0E">KEY</text><rect x="510" y="571" width="147" height="50" rx="8" fill="url(#brass)" stroke="#3B2A14" stroke-width="3"/><text x="584" y="605" text-anchor="middle" font-family="Georgia, Times New Roman, serif" font-weight="bold" font-size="24" fill="#2A1B0E">SHELVES</text><rect x="510" y="642" width="147" height="50" rx="8" fill="url(#brass)" stroke="#3B2A14" stroke-width="3"/><text x="584" y="676" text-anchor="middle" font-family="Georgia, Times New Roman, serif" font-weight="bold" font-size="24" fill="#2A1B0E">FILTERS</text>
-<text x="694" y="518" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="14" fill="#2A1B0E">NORMAL</text><rect x="682" y="528" width="24" height="24" rx="6" fill="#16A34A" stroke="#2A1B0E" stroke-width="3"/><text x="694" y="588" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="14" fill="#2A1B0E">PG-13</text><rect x="682" y="598" width="24" height="24" rx="6" fill="#EA580C" stroke="#2A1B0E" stroke-width="3"/><text x="694" y="658" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="14" fill="#2A1B0E">R-18+</text><rect x="682" y="668" width="24" height="24" rx="6" fill="#DB2777" stroke="#2A1B0E" stroke-width="3"/>
-<rect x="740" y="488" width="182" height="22" rx="8" fill="#2B1B10"/>
-<rect x="750" y="494" width="162" height="10" rx="5" fill="#6B4A2A"/>
-<circle cx="831" cy="621" r="91" fill="url(#wax)" stroke="#3B0A0A" stroke-width="4"/>
-<circle cx="831" cy="621" r="66" fill="none" stroke="#FCA5A5" stroke-width="3" stroke-dasharray="8 6" opacity="0.7"/>
-<text x="831" y="633" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="34" fill="#FEE2E2">DRAW</text>
-<rect x="0" y="880" width="1000" height="67" fill="#3B2A14" stroke="#17100A" stroke-width="4"/>
-<rect x="430" y="896" width="140" height="34" rx="17" fill="#17100A"/>
-<rect x="440" y="904" width="120" height="18" rx="9" fill="#6B4A2A"/>
-</svg>
-                        <div id="itemScreen" class="screen idle">
-                            <div class="screen-idle">THE ARCHIVE IS CLOSED<small>choose a key, then turn the seal</small></div>
-                            <div class="reel" id="itemReel"></div>
-                            <div class="result-stage" id="itemStage">
-                                <div class="burst" id="itemBurst"></div>
-                                <div id="itemCardSlot"></div>
-                            </div>
-                        </div>
-                        <div id="itemPanel" class="panel">
-                            <img id="panelToken" alt="No key">
-                            <img id="panelBall" alt="" hidden>
-                        </div>
-
-                        <button class="hotspot" id="saveButton" style="--x:34.36;--y:52.93;--w:14.71;--h:5.27" title="Keep this scroll in your codex" aria-label="Keep scroll"></button>
-                        <button class="hotspot" id="copyButton" style="--x:34.36;--y:60.34;--w:14.71;--h:5.27" title="Copy this scroll as text" aria-label="Copy scroll"></button>
-                        <button class="hotspot" id="adjustButton" style="--x:34.36;--y:67.75;--w:14.71;--h:5.27" title="Adjust (codices and options)" aria-label="Adjust"></button>
-                        <button class="hotspot" id="starLvlButton" style="--x:51.02;--y:52.93;--w:14.71;--h:5.27" title="Choose a key" aria-label="Choose a key" aria-haspopup="true"></button>
-                        <button class="hotspot" id="categoryButton" style="--x:51.02;--y:60.34;--w:14.71;--h:5.27" title="Choose shelves (categories)" aria-label="Shelves" aria-haspopup="true"></button>
-                        <button class="hotspot" id="filtersButton" style="--x:51.02;--y:67.75;--w:14.71;--h:5.27" title="Filters (content options)" aria-label="Filters"></button>
-                        <button class="hotspot light" id="lightNormal" data-mode="normal" style="--x:66.49;--y:53.29;--w:5.8;--h:5.32" title="Normal: no NSFW" aria-label="Normal content" aria-pressed="true"></button>
-                        <button class="hotspot light" id="lightPg13" data-mode="pg13" style="--x:66.49;--y:60.7;--w:5.8;--h:5.32" title="PG-13: include NSFW" aria-label="Include NSFW" aria-pressed="false"></button>
-                        <button class="hotspot light" id="lightR18" data-mode="r18" style="--x:66.49;--y:68.11;--w:5.8;--h:5.32" title="R-18+: NSFW only" aria-label="NSFW only" aria-pressed="false"></button>
-                        <button class="hotspot dial" id="itemRollButton" style="--x:73.99;--y:55.99;--w:18.24;--h:19.26" title="Turn the seal and draw a scroll" aria-label="Draw a scroll"></button>
-
-                        <div class="popover" id="starPopover" style="--x:51.02;--y:58.6" hidden>
-                            <div class="popover-title">Your key</div>
-                            <div class="token-grid">
-                                <button class="token-pick" data-star="0" aria-pressed="true"><img src="/assets/svg/tokens/randomticket.svg" alt=""><span>Any shelf<small>no key</small></span></button>
-                                <button class="token-pick" data-star="1" aria-pressed="false"><img src="/assets/svg/tokens/1_star.svg" alt=""><span>1★ Iron<small>F–D</small></span></button>
-                                <button class="token-pick" data-star="2" aria-pressed="false"><img src="/assets/svg/tokens/2_star.svg" alt=""><span>2★ Silver<small>E–C</small></span></button>
-                                <button class="token-pick" data-star="3" aria-pressed="false"><img src="/assets/svg/tokens/3_star.svg" alt=""><span>3★ Blue steel<small>D–B</small></span></button>
-                                <button class="token-pick" data-star="4" aria-pressed="false"><img src="/assets/svg/tokens/4_star.svg" alt=""><span>4★ Gold<small>C–A</small></span></button>
-                                <button class="token-pick" data-star="5" aria-pressed="false"><img src="/assets/svg/tokens/5_star.svg" alt=""><span>5★ Platinum<small>B–S</small></span></button>
-                                <button class="token-pick" data-star="6" aria-pressed="false"><img src="/assets/svg/tokens/6_star.svg" alt=""><span>6★ Crystal<small>A–SS</small></span></button>
-                                <button class="token-pick" data-star="7" aria-pressed="false"><img src="/assets/svg/tokens/7_star.svg" alt=""><span>7★ Star-iron<small>S–SSS</small></span></button>
-                                <button class="token-pick" data-star="8" aria-pressed="false"><img src="/assets/svg/tokens/ex_star.svg" alt=""><span>EX★ No key<small>SS–EX</small></span></button>
-                            </div>
-                        </div>
-
-                        <div class="popover" id="categoryPopover" style="--x:51.02;--y:66.3" hidden>
-                            <div class="popover-title">Shelves</div>
-                            <div id="itemsCategoryFilter" class="ball-grid">
-                                <label class="all"><input type="checkbox" id="itemsCategoryFilterAll" checked value="all"> All shelves</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterAbility" checked value="ability"><img src="/assets/svg/balls/ability.svg" alt="">Ability</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterArsenal" checked value="arsenal"><img src="/assets/svg/balls/arsenal.svg" alt="">Arsenal</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterConsumable" checked value="consumable"><img src="/assets/svg/balls/consumable.svg" alt="">Consumable</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterFamiliar" checked value="familiar"><img src="/assets/svg/balls/familiar.svg" alt="">Familiar</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterFarmable" checked value="farmable"><img src="/assets/svg/balls/farmable.svg" alt="">Farmable</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterNovelty" checked value="novelty"><img src="/assets/svg/balls/novelty.svg" alt="">Novelty</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterPassive" checked value="passive"><img src="/assets/svg/balls/passive.svg" alt="">Passive</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterRace" checked value="race"><img src="/assets/svg/balls/race.svg" alt="">Race</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterSkill" checked value="skill"><img src="/assets/svg/balls/skill.svg" alt="">Skill</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterVehicle" checked value="vehicle"><img src="/assets/svg/balls/vehicle.svg" alt="">Vehicle</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterWearable" checked value="wearable"><img src="/assets/svg/balls/wearable.svg" alt="">Wearable</label>
-                                <label><input type="checkbox" id="itemsCategoryFilterWorld" checked value="world"><img src="/assets/svg/balls/world.svg" alt="">World</label>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="machine-status"><span id="poolCount"></span> <span class="dim">· KEY picks a star level, SHELVES narrows the pool, the lights set content, the seal draws.</span></p>
-                </div>
-
-                <div class="stack">
-                    <fieldset class="group table-group">
-                        <legend>Scrolls drawn <span class="count" data-count-for="itemRollHistoryTable">0</span></legend>
-                        <div class="table-wrap">
-                            <!-- every table.dataTable gets its header from termRenderer.buildTableHeader():
-                                 data-kind picks the column set, data-extra adds a trailing button column -->
-                            <table id="itemRollHistoryTable" class="dataTable itemsTable historyTable" data-kind="items" data-extra="Keep"></table>
-                        </div>
-                    </fieldset>
-                    <fieldset class="group table-group">
-                        <legend>Kept scrolls <span class="count" data-count-for="saveTable">0</span> <span class="dim">codex: <strong class="current-build-name">default</strong></span></legend>
-                        <div class="table-wrap">
-                            <table id="saveTable" class="dataTable itemsTable saveTable" data-kind="items" data-extra="Remove"></table>
-                        </div>
-                    </fieldset>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= THE TOME (curses) ================= -->
-        <section id="curses" class="tabcontent page">
-            <header class="page-head">
-                <h1>The Tome of Curses</h1><p>Touch the orb to read a page. Bind the curse to claim its keys.</p>
-            </header>
-            <div class="page-body">
-                <div class="machine-wrap">
-                    <!-- The tome is the inline SVG below; the html plate, the orb button and the bind button sit in
-                         the sockets it draws, positioned by the same percentages. -->
-                    <div id="cursesMachine" class="machine curses-machine">
-                        <svg class="machine-art" viewBox="0 0 1000 991" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="none">
-<defs>
- <linearGradient id="cab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B2A55"/><stop offset="1" stop-color="#1A1326"/></linearGradient>
- <linearGradient id="leather" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A1D2E"/><stop offset="1" stop-color="#2A0F1A"/></linearGradient>
- <radialGradient id="socket" cx="50%" cy="50%" r="50%"><stop offset="0.7" stop-color="#0B0810"/><stop offset="1" stop-color="#2A1B3D"/></radialGradient>
- <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#A855F7" stop-opacity="0.6"/><stop offset="1" stop-color="#A855F7" stop-opacity="0"/></radialGradient>
-</defs>
-<rect x="80" y="0" width="840" height="300" fill="#0B0810"/>
-<circle cx="500" cy="303" r="205" fill="url(#glow)"/>
-<g opacity="0.35" stroke="#7C3AED" stroke-width="2" fill="none">
- <path d="M120 60 Q200 20 280 60 T440 60"/><path d="M560 40 Q640 90 720 40 T880 40"/><path d="M140 240 Q220 200 300 240 T460 240"/><path d="M540 260 Q620 220 700 260 T860 260"/>
-</g>
-<path d="M60 296 H940 L900 470 H100 Z" fill="#2A1B3D" stroke="#0B0810" stroke-width="4"/>
-<rect x="100" y="460" width="800" height="440" rx="18" fill="url(#cab)" stroke="#0B0810" stroke-width="4"/>
-<!-- the open tome, its pages are the html plate -->
-<rect x="70" y="450" width="860" height="277" rx="16" fill="url(#leather)" stroke="#0B0810" stroke-width="4"/>
-<rect x="86" y="466" width="828" height="245" rx="10" fill="#0B0810"/>
-<rect x="494" y="450" width="12" height="277" fill="#0B0810" opacity="0.6"/>
-<circle cx="500" cy="303" r="109" fill="url(#socket)" stroke="#0B0810" stroke-width="4"/>
-<path d="M430 406 Q500 456 570 406" fill="none" stroke="#C9B8E8" stroke-width="10" stroke-linecap="round"/>
-<rect x="367" y="725" width="266" height="92" rx="12" fill="#0B0810"/>
-<rect x="0" y="900" width="1000" height="91" fill="#3B1D1D" stroke="#0B0810" stroke-width="4"/>
-</svg>
-                        <div id="cursePlate" class="plate idle" style="--x:9.99;--y:48.43;--w:79.98;--h:21.89">
-                            <div class="plate-idle">THE TOME IS SHUT<small>touch the orb to read a page</small></div>
-                            <div class="plate-slot"></div>
-                            <div class="burst" id="curseBurst"></div>
-                        </div>
-                        <button id="cursesRollButton" class="hotspot orb" style="--x:40.69;--y:21.17;--w:18.61;--h:18.78" title="Read a curse" aria-label="Read a curse">
-                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-<defs><radialGradient id="orbg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#E9D5FF"/><stop offset="0.45" stop-color="#9F67FF"/><stop offset="1" stop-color="#3B1D6E"/></radialGradient></defs>
-<circle cx="100" cy="100" r="94" fill="url(#orbg)" stroke="#0B0810" stroke-width="5"/>
-<ellipse cx="68" cy="58" rx="26" ry="14" fill="#FFFFFF" opacity="0.5" transform="rotate(-30 68 58)"/>
-<text x="100" y="92" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="30" fill="#2A1B3D">READ</text>
-<text x="100" y="128" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="24" fill="#2A1B3D">A PAGE</text>
-</svg>
-                        </button>
-                        <button id="cursesSaveButton" class="hotspot accept" style="--x:37.48;--y:73.95;--w:25.04;--h:7.66" title="Bind this curse to your codex" aria-label="Bind this curse">
-                            <svg viewBox="0 0 327 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="none">
-<defs><linearGradient id="accg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F87171"/><stop offset="0.5" stop-color="#B91C1C"/><stop offset="1" stop-color="#7F1D1D"/></linearGradient></defs>
-<rect x="3" y="3" width="321" height="94" rx="12" fill="url(#accg)" stroke="#0B0810" stroke-width="5"/>
-<text x="163" y="62" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="34" fill="#2A0505">BIND IT</text>
-</svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="stack">
-                    <fieldset class="group table-group">
-                        <legend>Curses read <span class="count" data-count-for="curseRollHistoryTable">0</span></legend>
-                        <div class="table-wrap">
-                            <table id="curseRollHistoryTable" class="dataTable cursesTable historyTable" data-kind="curses" data-extra="Bind"></table>
-                        </div>
-                    </fieldset>
-                    <fieldset class="group table-group">
-                        <legend>Bound curses <span class="count" data-count-for="cursesSaveTable">0</span> <span class="dim">codex: <strong class="current-build-name">default</strong></span></legend>
-                        <div class="table-wrap">
-                            <table id="cursesSaveTable" class="dataTable cursesTable saveTable" data-kind="curses" data-extra="Remove"></table>
-                        </div>
-                    </fieldset>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= CODEX (build + character sheet) ================= -->
+        <!-- ================= CODEX (codices + character sheet) ================= -->
         <section id="build" class="tabcontent page">
             <header class="page-head">
-                <h1>Codex</h1><p>The character this codex belongs to, and everything they hold.</p>
-            </header>
-            <div class="page-body stack">
-                <div class="toolbar">
-                    <span class="dim">Codex</span>
-                    <strong class="build-name current-build-name">default</strong>
-                    <span class="count" id="buildTotals"></span>
-                    <span class="spacer"></span>
-                    <button id="buildManageButton" class="btn">Manage codices…</button>
+                <div>
+                    <h1>Codex</h1>
+                    <p>The character this codex belongs to, and everything they hold.</p>
+                </div>
+                <div class="row">
                     <button id="buildExportButton" class="btn primary">Export as text</button>
                 </div>
+            </header>
 
-                <!-- the character sheet: stored per codex in localStorage by pageHandler (profiles) -->
-                <fieldset class="group character-sheet" id="characterSheet">
-                    <legend>Character</legend>
-                    <div class="sheet-grid">
-                        <div class="portrait-column">
-                            <div class="portrait" id="portraitFrame">
-                                <img id="portraitImage" alt="" hidden>
-                                <span class="portrait-empty" id="portraitEmpty">No portrait yet</span>
-                            </div>
-                            <div class="row">
-                                <label class="btn small" for="portraitInput">Choose portrait…</label>
-                                <input type="file" id="portraitInput" accept="image/*" hidden>
-                                <button type="button" id="portraitClear" class="btn small">Remove</button>
-                            </div>
-                            <p class="hint">Stored in this browser only, scaled down to keep it small.</p>
-                        </div>
-                        <div class="sheet-fields form-grid">
-                            <label for="profileName">Name</label>
-                            <input type="text" id="profileName" data-profile="name" placeholder="Who holds this codex?" autocomplete="off">
-                            <label for="profileWorld">World</label>
-                            <input type="text" id="profileWorld" data-profile="world" placeholder="The setting they live in" autocomplete="off">
-                            <label for="profileLocation">Right now</label>
-                            <input type="text" id="profileLocation" data-profile="location" placeholder="Where they are at this point in the story" autocomplete="off">
-                            <label for="profileNotes">Notes</label>
-                            <textarea id="profileNotes" data-profile="notes" rows="4" placeholder="Anything worth remembering: goals, allies, what the last scroll cost them…"></textarea>
-                            <span></span>
-                            <span class="hint" id="profileSaved"></span>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset class="group table-group">
-                    <legend>Scrolls <span class="count" data-count-for="buildItemsTable">0</span></legend>
-                    <div class="table-wrap">
-                        <table id="buildItemsTable" class="dataTable itemsTable saveTable" data-kind="items" data-extra="Remove"></table>
-                    </div>
-                </fieldset>
-                <fieldset class="group table-group">
-                    <legend>Curses <span class="count" data-count-for="buildCursesTable">0</span></legend>
-                    <div class="table-wrap">
-                        <table id="buildCursesTable" class="dataTable cursesTable saveTable" data-kind="curses" data-extra="Remove"></table>
-                    </div>
-                </fieldset>
+            <div class="panel codex-bar">
+                <label class="codex-select">
+                    <span class="dim">Current codex</span>
+                    <select id="codexSelector"><!-- populated by javascript --></select>
+                </label>
+                <span class="count big" id="buildTotals"></span>
+                <span class="spacer"></span>
+                <input type="text" id="codexNewName" placeholder="New codex name" aria-label="New codex name" autocomplete="off">
+                <button id="codexNewButton" class="btn">Create</button>
+                <button id="codexDeleteButton" class="btn danger">Delete</button>
             </div>
+
+            <!-- the character sheet: stored per codex in localStorage by pageHandler (profiles) -->
+            <section class="panel character-sheet" id="characterSheet">
+                <div class="portrait-column">
+                    <div class="portrait" id="portraitFrame">
+                        <img id="portraitImage" alt="" hidden>
+                        <span class="portrait-empty" id="portraitEmpty">No portrait yet</span>
+                    </div>
+                    <div class="row center">
+                        <label class="btn small" for="portraitInput">Choose portrait</label>
+                        <input type="file" id="portraitInput" accept="image/*" hidden>
+                        <button type="button" id="portraitClear" class="btn small ghost">Remove</button>
+                    </div>
+                </div>
+                <div class="sheet-fields">
+                    <label class="field"><span>Name</span><input type="text" id="profileName" data-profile="name" placeholder="Who holds this codex?" autocomplete="off"></label>
+                    <label class="field"><span>World</span><input type="text" id="profileWorld" data-profile="world" placeholder="The setting they live in" autocomplete="off"></label>
+                    <label class="field wide"><span>Right now</span><input type="text" id="profileLocation" data-profile="location" placeholder="Where they are at this point in the story" autocomplete="off"></label>
+                    <label class="field wide"><span>Notes</span><textarea id="profileNotes" data-profile="notes" rows="4" placeholder="Anything worth remembering: goals, allies, what the last scroll cost them…"></textarea></label>
+                    <p class="hint wide">Saved as you type, in this browser only. <span id="profileSaved" class="saved-note"></span></p>
+                </div>
+            </section>
+
+            <section class="panel table-group">
+                <header class="panel-head"><h2>Scrolls <span class="count" data-count-for="buildItemsTable">0</span></h2></header>
+                <div class="table-wrap">
+                    <table id="buildItemsTable" class="dataTable itemsTable saveTable" data-kind="items" data-columns="compact" data-extra="Remove"></table>
+                </div>
+            </section>
+            <section class="panel table-group">
+                <header class="panel-head"><h2>Curses <span class="count" data-count-for="buildCursesTable">0</span></h2></header>
+                <div class="table-wrap">
+                    <table id="buildCursesTable" class="dataTable cursesTable saveTable" data-kind="curses" data-columns="compact" data-extra="Remove"></table>
+                </div>
+            </section>
         </section>
 
         <!-- ================= CATALOGUE (search) ================= -->
         <section id="search" class="tabcontent page">
             <header class="page-head">
-                <h1>Catalogue</h1><p>Find a particular scroll or curse by name, series, text, or any column.</p>
+                <div>
+                    <h1>Catalogue</h1>
+                    <p>Find a particular scroll or curse by name, series, text, or any column.</p>
+                </div>
+                <div class="seg big" role="group" aria-label="What to search">
+                    <button aria-pressed="true" data-search="searchItems"><svg class="icon"><use href="#i-scroll"/></svg>Scrolls</button>
+                    <button aria-pressed="false" data-search="searchCurses"><svg class="icon"><use href="#i-curse"/></svg>Curses</button>
+                </div>
             </header>
-            <div class="page-body">
-                <div class="subtabs">
-                    <button class="active" data-search="searchItems">Scrolls</button>
-                    <button data-search="searchCurses">Curses</button>
-                </div>
 
-                <div id="searchItems" class="searchSections active">
-                    <form class="search-form" id="searchItemsOptions">
-                        <div class="field"><label for="searchItemsName">Name</label><input type="text" id="searchItemsName" data-key="name" placeholder="Search by name"></div>
-                        <div class="field"><label for="searchItemsSeries">Series</label><input type="text" id="searchItemsSeries" data-key="series" placeholder="Search by series"></div>
-                        <div class="field"><label for="searchItemsDescription">Description</label><input type="text" id="searchItemsDescription" data-key="description" placeholder="Search by description"></div>
-                        <div class="field wide">
-                            <label for="searchItemsAdvanced">Advanced <span class="dim">(Header:value, comma-separated values, space-separated terms, quotes for spaces)</span></label>
-                            <input type="text" id="searchItemsAdvanced" class="advancedSearch" placeholder='Magic:F Motion:C,D "growth type":Train'>
-                        </div>
-                        <div class="actions">
-                            <button type="submit" id="searchItemsButton" class="btn primary">Search</button>
-                            <span class="dim">Comma-separate multiple values. Empty fields are ignored.</span>
-                        </div>
-                    </form>
-                    <fieldset class="group table-group">
-                        <legend>Scrolls <span class="count" data-count-for="searchItemsTable">0</span></legend>
-                        <div class="table-wrap">
-                            <table id="searchItemsTable" class="dataTable itemsTable searchTable" data-kind="items" data-extra="Keep"></table>
-                        </div>
-                    </fieldset>
-                </div>
+            <div id="searchItems" class="searchSections active">
+                <form class="panel search-form" id="searchItemsOptions">
+                    <label class="field"><span>Name</span><input type="text" id="searchItemsName" data-key="name" placeholder="Any name"></label>
+                    <label class="field"><span>Series</span><input type="text" id="searchItemsSeries" data-key="series" placeholder="Any series"></label>
+                    <label class="field"><span>Description</span><input type="text" id="searchItemsDescription" data-key="description" placeholder="Words in the description"></label>
+                    <label class="field wide"><span>Advanced <span class="dim">Header:value, commas between values, spaces between terms, quotes around spaces</span></span>
+                        <input type="text" id="searchItemsAdvanced" class="advancedSearch mono" placeholder='Magic:F Motion:C,D "growth type":Train'></label>
+                    <div class="actions">
+                        <button type="submit" id="searchItemsButton" class="btn primary"><svg class="icon"><use href="#i-search"/></svg>Search</button>
+                        <span class="dim">Empty fields are ignored.</span>
+                    </div>
+                </form>
+                <section class="panel table-group">
+                    <header class="panel-head"><h2>Scrolls <span class="count" data-count-for="searchItemsTable">0</span></h2><span class="dim">Select a row to see the whole scroll</span></header>
+                    <div class="table-wrap tall">
+                        <table id="searchItemsTable" class="dataTable itemsTable searchTable" data-kind="items" data-extra="Keep"></table>
+                    </div>
+                </section>
+            </div>
 
-                <div id="searchCurses" class="searchSections">
-                    <form class="search-form" id="searchCursesOptions">
-                        <div class="field"><label for="searchCursesName">Name</label><input type="text" id="searchCursesName" data-key="name" placeholder="Search by name"></div>
-                        <div class="field"><label for="searchCursesDescription">Description</label><input type="text" id="searchCursesDescription" data-key="description" placeholder="Search by description"></div>
-                        <div class="field"><label for="searchCursesResolution">Resolution</label><input type="text" id="searchCursesResolution" data-key="resolution" placeholder="Search by resolution"></div>
-                        <div class="field wide">
-                            <label for="searchCursesAdvanced">Advanced <span class="dim">(Header:value)</span></label>
-                            <input type="text" id="searchCursesAdvanced" class="advancedSearch" placeholder='Target:You,Others Severity:Major'>
+            <div id="searchCurses" class="searchSections">
+                <form class="panel search-form" id="searchCursesOptions">
+                    <label class="field"><span>Name</span><input type="text" id="searchCursesName" data-key="name" placeholder="Any name"></label>
+                    <label class="field"><span>Description</span><input type="text" id="searchCursesDescription" data-key="description" placeholder="Words in the description"></label>
+                    <label class="field"><span>Resolution</span><input type="text" id="searchCursesResolution" data-key="resolution" placeholder="Words in the resolution"></label>
+                    <label class="field wide"><span>Advanced <span class="dim">Header:value</span></span>
+                        <input type="text" id="searchCursesAdvanced" class="advancedSearch mono" placeholder='Target:You,Others Severity:Major'></label>
+                    <div class="actions">
+                        <button type="submit" id="searchCursesButton" class="btn primary"><svg class="icon"><use href="#i-search"/></svg>Search</button>
+                        <span class="dim">Empty fields are ignored.</span>
+                    </div>
+                </form>
+                <section class="panel table-group">
+                    <header class="panel-head"><h2>Curses <span class="count" data-count-for="searchCursesTable">0</span></h2><span class="dim">Select a row to see the whole page</span></header>
+                    <div class="table-wrap tall">
+                        <table id="searchCursesTable" class="dataTable cursesTable searchTable" data-kind="curses" data-extra="Bind"></table>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+        <!-- ================= GUIDE (how it works + ways in) ================= -->
+        <section id="guide" class="tabcontent page">
+            <header class="page-head">
+                <div>
+                    <h1>Guide</h1>
+                    <p>How a character finds the archive, what the keys open, and how scrolls are measured.</p>
+                </div>
+            </header>
+
+            <div class="guide-layout">
+                <nav class="guide-toc" aria-label="Guide contents">
+                    <a href="#g-ways">Ways in</a>
+                    <a href="#g-keys">Keys</a>
+                    <a href="#g-kinds">Kinds of scroll</a>
+                    <a href="#g-stats">Stats</a>
+                    <a href="#g-values">Stat values and rank</a>
+                    <a href="#g-mods">Modifiers</a>
+                    <a href="#g-skills">Abilities and skills</a>
+                    <a href="#g-curses">Curses</a>
+                    <a href="#g-honest">Drawing honestly</a>
+                </nav>
+
+                <div class="guide-body">
+                    <section class="guide-section" id="g-ways">
+                        <h2>Ways in</h2>
+                        <p>The archive is a framework for a story, not a rulebook. Run it however the story needs. The
+                            one thing every character shares is a first handful of keys, and how many depends on how the
+                            key reached them.</p>
+                        <div class="ways-grid">
+                            <div class="way"><h4>Inherited</h4><p>The key turned up among a dead relative's effects, with no note and no explanation.
+                                You have the keys they never used: two 3-star keys and one 2-star key.</p></div>
+                            <div class="way"><h4>Chosen at random</h4><p>The archive picks someone every so often, from everyone alive, for no reason anyone
+                                has found. You got the letter. One 4-star key, one 2-star key, one 1-star key.</p></div>
+                            <div class="way"><h4>Stolen</h4><p>It belonged to a collector, a wizard, a vault. Now it belongs to you, and someone
+                                may want it back. Keys are small and plentiful on the way out: three 2-star keys and two 1-star keys.</p></div>
+                            <div class="way"><h4>Sent</h4><p>A faction that knows what the shelves hold put the key in your hand and told you what
+                                to bring back. They equipped you well: one 4-star key and one 3-star key, and they will be expecting results.</p></div>
+                            <div class="way"><h4>Died</h4><p>The archive is what came after. You woke on its floor with a key in your fist and a
+                                second life to spend. Three 3-star keys.</p></div>
                         </div>
-                        <div class="actions">
-                            <button type="submit" id="searchCursesButton" class="btn primary">Search</button>
+                        <p>Want it all drawn for you? Open <button class="link" data-tab="quickstart">Quickstart</button>.</p>
+                    </section>
+
+                    <section class="guide-section" id="g-keys">
+                        <h2>Keys</h2>
+                        <p>You open the archive with keys, and the metal of the key tells you how deep into the stacks it
+                            reaches: each level draws from three neighbouring ranks of scroll. Keys are not given, they are
+                            earned by deeds in your story. Decide what your character did, decide how big it was, and the
+                            archive hands over the matching key. Putting the darkest key next to the humblest one is deliberate.</p>
+                        <div class="key-list">
+                            <div class="key-row"><img src="/assets/svg/tokens/1_star.svg" alt=""><div><h4>Iron <span class="tag">1★ · F–D</span></h4><p>Black, matte, a little worn. A hard day's work: anything a determined person can finish with effort and no help.</p></div></div>
+                            <div class="key-row"><img src="/assets/svg/tokens/2_star.svg" alt=""><div><h4>Silver <span class="tag">2★ · E–C</span></h4><p>Beyond most people: a feat the town talks about for a week.</p></div></div>
+                            <div class="key-row"><img src="/assets/svg/tokens/3_star.svg" alt=""><div><h4>Blue steel <span class="tag">3★ · D–B</span></h4><p>Dangerous: something that could plausibly kill you, done anyway.</p></div></div>
+                            <div class="key-row"><img src="/assets/svg/tokens/4_star.svg" alt=""><div><h4>Gold <span class="tag">4★ · C–A</span></h4><p>Heroic: surviving what should not be survivable, or ending what should not be endable.</p></div></div>
+                            <div class="key-row"><img src="/assets/svg/tokens/5_star.svg" alt=""><div><h4>Platinum <span class="tag">5★ · B–S</span></h4><p>White and bright, the last key that still looks like something a jeweller could make. Something a city remembers for a generation.</p></div></div>
+                            <div class="key-row"><img src="/assets/svg/tokens/6_star.svg" alt=""><div><h4>Crystal <span class="tag">6★ · A–SS</span></h4><p>Clear as glass, with light moving slowly inside it like a flame seen through water. Something a nation writes into its history.</p></div></div>
+                            <div class="key-row"><img src="/assets/svg/tokens/7_star.svg" alt=""><div><h4>Star-iron <span class="tag">7★ · S–SSS</span></h4><p>Black like the iron key, but full of tiny points of light, a piece of the night sky cut into a key. Something the whole world feels happen.</p></div></div>
+                            <div class="key-row"><img src="/assets/svg/tokens/ex_star.svg" alt=""><div><h4>No key at all <span class="tag">EX★ · SS–EX</span></h4><p>A key-shaped hole in the air, with light coming through from whatever is on the other side. You turn the gap. Something reality itself has to adjust to.</p></div></div>
                         </div>
-                    </form>
-                    <fieldset class="group table-group">
-                        <legend>Curses <span class="count" data-count-for="searchCursesTable">0</span></legend>
-                        <div class="table-wrap">
-                            <table id="searchCursesTable" class="dataTable cursesTable searchTable" data-kind="curses" data-extra="Bind"></table>
+                    </section>
+
+                    <section class="guide-section" id="g-kinds">
+                        <h2>Kinds of scroll</h2>
+                        <p>Scrolls come in twelve kinds. The kind decides how the archive delivers the gift.</p>
+                        <div class="kind-groups">
+                            <div>
+                                <h3>Learned <span class="dim">the scroll teaches you</span></h3>
+                                <dl class="def-list">
+                                    <div><dt><img src="/assets/svg/balls/ability.svg" alt="">Ability</dt><dd>An active power you can call on at will</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/skill.svg" alt="">Skill</dt><dd>Knowledge and reflexes, poured in all at once (and teachable to others)</dd></div>
+                                </dl>
+                            </div>
+                            <div>
+                                <h3>Woven <span class="dim">the scroll's magic rewrites you</span></h3>
+                                <dl class="def-list">
+                                    <div><dt><img src="/assets/svg/balls/passive.svg" alt="">Passive</dt><dd>A trait that is always on</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/race.svg" alt="">Race</dt><dd>A change of species or kind</dd></div>
+                                </dl>
+                            </div>
+                            <div class="span-2">
+                                <h3>Summoned <span class="dim">words of power leave the page</span></h3>
+                                <dl class="def-list two-col">
+                                    <div><dt><img src="/assets/svg/balls/arsenal.svg" alt="">Arsenal</dt><dd>Weapons, shields, and the like</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/consumable.svg" alt="">Consumable</dt><dd>One use, sometimes restocking</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/familiar.svg" alt="">Familiar</dt><dd>A being or a person who answers the summons</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/farmable.svg" alt="">Farmable</dt><dd>Something you can grow or duplicate with time and effort</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/novelty.svg" alt="">Novelty</dt><dd>No use in a fight; delightful anyway</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/vehicle.svg" alt="">Vehicle</dt><dd>Something to drive, pilot, or ride</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/wearable.svg" alt="">Wearable</dt><dd>Clothes, armour, accessories</dd></div>
+                                    <div><dt><img src="/assets/svg/balls/world.svg" alt="">World</dt><dd>The words spread past you and change the world itself</dd></div>
+                                </dl>
+                            </div>
                         </div>
-                    </fieldset>
+                    </section>
+
+                    <section class="guide-section" id="g-stats">
+                        <h2>Stats</h2>
+                        <p>Every scroll is measured on eight stats. Each one is a different way of leaving a mark on the world.</p>
+                        <dl class="def-list two-col">
+                            <div><dt>Magic</dt><dd>Influence through the mysterious and the supernatural</dd></div>
+                            <div><dt>Memetic</dt><dd>Influence through ideas, images, and sounds</dd></div>
+                            <div><dt>Might</dt><dd>Influence through physical strength and durability</dd></div>
+                            <div><dt>Mind</dt><dd>Influence through intelligence and mental flexibility</dd></div>
+                            <div><dt>Motion</dt><dd>Influence through speed, agility, and dexterity</dd></div>
+                            <div><dt>Moxie</dt><dd>Influence through charisma and force of personality</dd></div>
+                            <div><dt>Mutation</dt><dd>Influence through deviation from what a body should be</dd></div>
+                            <div><dt>Myth</dt><dd>Influence through history, legend, and cultural weight</dd></div>
+                        </dl>
+                    </section>
+
+                    <section class="guide-section" id="g-values">
+                        <h2>Stat values and rank</h2>
+                        <p>Each stat is a letter from F to EX, and each letter is worth a number. The eight numbers add up
+                            to the scroll's total, and the total decides its rank.</p>
+                        <div class="table-wrap plain">
+                            <table class="rank-table">
+                                <thead><tr><th>Letter</th><th>Scale</th><th class="num">Stat value</th><th class="num">Total for this rank</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--Frank)">F</span></td><td>Below an average person</td><td class="num">0</td><td class="num">0</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--Erank)">E</span></td><td>An average person</td><td class="num">1</td><td class="num">5</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--Drank)">D</span></td><td>Breaks a building</td><td class="num">5</td><td class="num">10</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--Crank)">C</span></td><td>Breaks a city</td><td class="num">10</td><td class="num">50</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--Brank)">B</span></td><td>Breaks a region</td><td class="num">50</td><td class="num">100</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--Arank)">A</span></td><td>Breaks a country</td><td class="num">100</td><td class="num">500</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--Srank)">S</span></td><td>Breaks a continent</td><td class="num">500</td><td class="num">1,000</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--SSrank)">SS</span></td><td>Breaks a planet</td><td class="num">1,000</td><td class="num">5,000</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--SSSrank)">SSS</span></td><td>Breaks a galaxy</td><td class="num">5,000</td><td class="num">10,000</td></tr>
+                                    <tr><td><span class="rank-badge" style="--rank-color:var(--EXrank)">EX</span></td><td>Breaks a universe</td><td class="num">10,000</td><td class="num">50,000</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="g-mods">
+                        <h2>Modifiers</h2>
+                        <p>A scroll may carry a modifier: how its gift grows, whether it restocks, whether it comes back
+                            when lost, and whether it can be given away.</p>
+                        <div class="kind-groups">
+                            <div>
+                                <h3>Growth type</h3>
+                                <dl class="def-list">
+                                    <div><dt>Time</dt><dd>Grows on its own as time passes</dd></div>
+                                    <div><dt>Train</dt><dd>Grows with practice</dd></div>
+                                    <div><dt>Ticket</dt><dd>Grows with the number of keys you have ever used</dd></div>
+                                    <div><dt>Trust</dt><dd>Grows as a bond deepens</dd></div>
+                                    <div><dt>Tinker</dt><dd>Grows through upgrades and attachments</dd></div>
+                                    <div><dt>Twin</dt><dd>Grows when you draw the same scroll again</dd></div>
+                                </dl>
+                            </div>
+                            <div>
+                                <h3>Growth rate</h3>
+                                <dl class="def-list">
+                                    <div><dt>Snail</dt><dd>Decades per rank</dd></div>
+                                    <div><dt>Slow</dt><dd>Years per rank</dd></div>
+                                    <div><dt>Medium</dt><dd>Months per rank</dd></div>
+                                    <div><dt>Fast</dt><dd>Weeks per rank</dd></div>
+                                    <div><dt>Hyper</dt><dd>Days per rank</dd></div>
+                                </dl>
+                            </div>
+                            <div>
+                                <h3>Return</h3>
+                                <dl class="def-list">
+                                    <div><dt>Auto</dt><dd>Comes back almost at once when lost</dd></div>
+                                    <div><dt>Timer</dt><dd>Comes back one to twenty-four hours after being lost</dd></div>
+                                    <div><dt>Manual</dt><dd>Tells you where it is; you fetch it</dd></div>
+                                    <div><dt>N/A</dt><dd>Lost is lost</dd></div>
+                                </dl>
+                            </div>
+                            <div>
+                                <h3>Restock and the rest</h3>
+                                <dl class="def-list">
+                                    <div><dt>Timer</dt><dd>A consumable returns to the scroll after anywhere from half an hour to a decade</dd></div>
+                                    <div><dt>Gift</dt><dd>Can be given to someone else</dd></div>
+                                    <div><dt>NSFW</dt><dd>Hidden unless you turn it on in Options or on the Draw page</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="g-skills">
+                        <h2>Abilities and skills</h2>
+                        <p>An ability is anything you have to actively use. If you like structure, give your character
+                            ability slots: start with one and add another for every five abilities drawn. If you don't,
+                            ignore that entirely.</p>
+                        <p>Some skill scrolls name a level. This is what the levels mean:</p>
+                        <dl class="def-list">
+                            <div><dt>Beginner</dt><dd>A passing knowledge and perhaps a year of on-and-off practice</dd></div>
+                            <div><dt>Apprentice</dt><dd>About five years of solid basic training</dd></div>
+                            <div><dt>Journeyman</dt><dd>About ten years of dedicated training</dd></div>
+                            <div><dt>Expert</dt><dd>Roughly twenty-five years of practical experience, all at once</dd></div>
+                            <div><dt>Master</dt><dd>A century of skill, written straight into you</dd></div>
+                            <div><dt>Grandmaster</dt><dd>A master of masters; nobody alive can match you</dd></div>
+                            <div><dt>Divine</dt><dd>You invented the field, and everyone else is imitating you badly</dd></div>
+                        </dl>
+                    </section>
+
+                    <section class="guide-section" id="g-curses">
+                        <h2>Curses</h2>
+                        <p>Beside the archive sits a tome of curses. Read one and bind it to your character, at the
+                            start of the story or whenever things need shaking up, and the tome pays you in keys. The
+                            worse the curse, the better the keys. Bind too many and you will be absurdly powerful
+                            before chapter two, which is less fun than it sounds.</p>
+                    </section>
+
+                    <section class="guide-section" id="g-honest">
+                        <h2>Drawing honestly</h2>
+                        <p>Nobody is watching. If a draw would wreck the story, draw again, or pick the scroll you
+                            needed and call it luck. The archive is here to make writing more fun, not to referee it.</p>
+                        <h3>Using this in your work</h3>
+                        <p>Write whatever you like with it. A mention of the Infinite Archive somewhere is appreciated
+                            and nothing more is asked. The site's code is free software under the GPL, so you can host
+                            your own copy too.</p>
+                    </section>
                 </div>
             </div>
         </section>
@@ -719,12 +683,12 @@
 
     <footer class="site-footer">
         <span>Infinite Archive</span>
-        <span class="dim">free software, GPL-3.0</span>
+        <span class="dim">Free software, GPL-3.0</span>
     </footer>
 
-    <div id="toast" class="balloon" role="status" aria-live="polite">
+    <div id="toast" class="toast" role="status" aria-live="polite">
         <strong class="toast-title"></strong>
-        <div class="toast-body"></div>
+        <span class="toast-body"></span>
     </div>
 </body>
 
