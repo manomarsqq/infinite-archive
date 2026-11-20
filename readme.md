@@ -13,9 +13,13 @@ npm test           # vitest
 npm run viteBuild  # production build into dist/
 ```
 
-Scroll and curse data lives in `src/data/values.json`. To rebuild it from a Google Sheet, put the sheet id and
-an API key in a `.env` file (`SHEETID=...`, `SHEETSAPIKEY=...`) and run `npm run getData`; `build.js` writes the
-file. `src/data/sampleValues.json` documents the column layout a sheet needs.
+Scroll and curse data lives in `src/data/values.json`, one entry per line: 720 scrolls (60 of each kind, across
+all ten ranks) and 90 curses. About one in eight is adult content, flagged NSFW and hidden by default. Edit it by hand to add your own. A scroll's stat letters have to add up to its
+total and rank, as laid out in the Guide; `src/data/sampleValues.json` documents the columns.
+
+`npm run getData` is optional and **replaces** `values.json` with the contents of a Google Sheet in the same
+layout (sheet id and API key in a `.env` file as `SHEETID=...` and `SHEETSAPIKEY=...`). Nothing runs it
+automatically.
 
 ## Custom domain
 
@@ -32,5 +36,6 @@ header button or Options. Both modes are blocks of colour tokens at the top of `
 ## License
 
 GPL-3.0. The code began as a fork of an earlier gacha project and has since been rewritten; the art, names and
-copy here are original. The scroll and curse entries in `src/data/values.json` come from the Omni Gacha
-spreadsheet and were written by CyberQueenJolyne, Desolatesabers and Argotherat.
+copy here are original, and so are the scrolls and curses in `src/data/values.json`. The eight stats, the rank
+ladder and the column layout follow the Omni Gacha spreadsheet by CyberQueenJolyne, Desolatesabers and
+Argotherat, whose entries shipped with earlier versions of this repository.

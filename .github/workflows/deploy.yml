@@ -1,16 +1,13 @@
 # Build the site with Vite and publish it to GitHub Pages.
 # Pages must be enabled once by hand (Settings -> Pages -> Source: "GitHub Actions"); the workflow
 # token is not allowed to create the Pages site itself.
-# Scroll data is pulled from a Google Sheet when the SHEETID and SHEETSAPIKEY secrets exist;
-# without them the site is published with the sample data.
+# Scroll data is the src/data/values.json committed in the repository.
 name: Deploy to GitHub Pages
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
-  schedule:
-    - cron: "0 8 * * *" # rebuild daily so sheet edits reach the site
 
 permissions:
   contents: read
@@ -24,9 +21,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      SHEETID: ${{ secrets.SHEETID }}
-      SHEETSAPIKEY: ${{ secrets.SHEETSAPIKEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,9 +28,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build data from the sheet
-        if: env.SHEETID != '' && env.SHEETSAPIKEY != ''
-        run: npm run getData
       - name: Build the site
         # a project site lives at https://<user>.github.io/<repo>/, so asset urls need that prefix.
         # with a custom domain (a CNAME file in the repository root) the site is served from "/".

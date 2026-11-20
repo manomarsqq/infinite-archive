@@ -141,7 +141,7 @@
                 <button class="home-card" data-tab="search">
                     <svg class="icon"><use href="#i-search"/></svg>
                     <h3>Catalogue</h3>
-                    <p>Search all of it by name, series, text, or any stat. Keep anything you find.</p>
+                    <p>Search all of it by name, wing, text, or any stat. Keep anything you find.</p>
                 </button>
             </div>
 
@@ -434,7 +434,7 @@
             <header class="page-head">
                 <div>
                     <h1>Catalogue</h1>
-                    <p>Find a particular scroll or curse by name, series, text, or any column.</p>
+                    <p>Find a particular scroll or curse by name, wing, text, or any column.</p>
                 </div>
                 <div class="seg big" role="group" aria-label="What to search">
                     <button aria-pressed="true" data-search="searchItems"><svg class="icon"><use href="#i-scroll"/></svg>Scrolls</button>
@@ -445,7 +445,7 @@
             <div id="searchItems" class="searchSections active">
                 <form class="panel search-form" id="searchItemsOptions">
                     <label class="field"><span>Name</span><input type="text" id="searchItemsName" data-key="name" placeholder="Any name"></label>
-                    <label class="field"><span>Series</span><input type="text" id="searchItemsSeries" data-key="series" placeholder="Any series"></label>
+                    <label class="field"><span>Wing</span><input type="text" id="searchItemsSeries" data-key="series" placeholder="Any wing"></label>
                     <label class="field"><span>Description</span><input type="text" id="searchItemsDescription" data-key="description" placeholder="Words in the description"></label>
                     <label class="field wide"><span>Advanced <span class="dim">Header:value, commas between values, spaces between terms, quotes around spaces</span></span>
                         <input type="text" id="searchItemsAdvanced" class="advancedSearch mono" placeholder='Magic:F Motion:C,D "growth type":Train'></label>
@@ -551,6 +551,13 @@
                     <section class="guide-section" id="g-kinds">
                         <h2>Kinds of scroll</h2>
                         <p>Scrolls come in twelve kinds. The kind decides how the archive delivers the gift.</p>
+                        <p>Every scroll is also filed in one of the archive's fourteen wings, which says what the
+                            gift is about: Hearthside for the home, Tidewater for sea and weather, Greenwood for
+                            growing things, Underhill for stone and the deep places, Brassworks for machines,
+                            Lanternlight for fire and light, the Quiet Room for the mind, Crossroads for roads and
+                            bargains, Marrow for the body, Gravewatch for the dead, the High Court for rule and
+                            reputation, Warhall for arms, Farshore for the sky and beyond, and the Margin for the
+                            archive's own business.</p>
                         <div class="kind-groups">
                             <div>
                                 <h3>Learned <span class="dim">the scroll teaches you</span></h3>

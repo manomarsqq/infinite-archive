@@ -11,7 +11,7 @@ import { gachaCurse } from "./gachaCurse.js";
 
 /**
  * every json file in /data, as a url, resolved at build time.
- * values.json is gitignored and built by build.js, so it may be missing on a fresh clone;
+ * values.json ships with the repository; if it is ever missing,
  * a glob only lists files that exist, which lets loadParseJSON fall back to the sample file.
  */
 const dataFiles = import.meta.glob("/data/*.json", { query: "?url", import: "default", eager: true })
@@ -74,7 +74,7 @@ class filteringHandler {
 
 	/**
 	 * static async function to load and parse the json data.
-	 * prefers data/values.json (built from the sheet), falls back to data/sampleValues.json.
+	 * prefers data/values.json, falls back to data/sampleValues.json.
 	 * @returns {Promise<{
 	 * "items": gachaItem[]
 	 * "curses": gachaCurse[]
@@ -85,12 +85,12 @@ class filteringHandler {
 		if (!url) {
 			url = dataFiles["/data/sampleValues.json"]
 			filteringHandler.usingSampleData = true
-			console.warn("data/values.json not found, using data/sampleValues.json. Run `npm run getData` with a SHEETSAPIKEY to build the real data.")
+			console.warn("data/values.json not found, using data/sampleValues.json.")
 		}
 		const rawfetch = await fetch(url)
 		const values = await rawfetch.json()
 
-		// the sample file is a raw sheet export and still carries its header rows; build.js strips them from values.json
+		// the sample file carries header rows to document the columns; values.json has none
 		if (values.items[0] && values.items[0][0] === "Name") values.items.shift()
 		if (values.curses[0] && values.curses[0][0] === "Curse Name") values.curses.shift()
 
@@ -404,7 +404,7 @@ class filteringHandler {
 	/**
 	 * full search: plain "contains" matches on named keys, then the advanced syntax on top.
 	 * @param {{basic?: Object<string, string>, advanced?: string}} query
-	 *   basic: key -> comma separated text, e.g. { name: "sword", series: "bleach,one piece" }. empty strings are ignored.
+	 *   basic: key -> comma separated text, e.g. { name: "sword", series: "tidewater,farshore" }. empty strings are ignored.
 	 *   advanced: "Header:value Header2:a,b" syntax, see #searchTextToObjects
 	 * @param {string} term "items"/"curses"
 	 * @returns {gachaItem[]|gachaCurse[]|null} null if term invalid

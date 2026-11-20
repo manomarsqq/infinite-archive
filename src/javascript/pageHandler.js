@@ -158,7 +158,7 @@ class pageHandler {
 		this.#quickstart.init()
 		this.loadProfile()
 		this.changeTabTo(location.hash.replace("#", "") || "home")
-		if (filteringHandler.usingSampleData) toast("data/values.json has not been built yet, showing the sample scrolls", "Sample data")
+		if (filteringHandler.usingSampleData) toast("data/values.json is missing, showing the sample scrolls", "Sample data")
 	}
 
 	// ---------------------------------------------------------------- dialogs

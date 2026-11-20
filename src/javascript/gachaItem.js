@@ -15,7 +15,7 @@ class gachaItem extends gachaTerm {
 	 */
 	static columns = [
 		{ key: "name", label: "Name" },
-		{ key: "series", label: "Series" },
+		{ key: "series", label: "Wing" },
 		{ key: "description", label: "Short Description" },
 		{ key: "category", label: "Category" },
 		{ key: "gender", label: "Gender" },

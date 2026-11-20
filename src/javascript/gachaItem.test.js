@@ -1,7 +1,7 @@
 import { gachaItem } from "./gachaItem.js";
 import { expect, test } from "vitest";
 
-// values.json is built from the sheet and gitignored, so these tests only run when it exists
+// these tests read the shipped data, and are skipped if values.json is missing
 const dataFiles = import.meta.glob("../data/values.json", { import: "default", eager: true })
 const valuesJson = dataFiles["../data/values.json"]
 
@@ -24,9 +24,9 @@ test.skipIf(!valuesJson)("first item tests", function () {
 	const data = setup()
 
 	const firstItem = data.items[0]
-	expect(firstItem.get("name")).toEqual("Fire Manipulation")
+	expect(firstItem.get("name")).toEqual("Candle Thumb")
 	expect(firstItem.get("nsfw")).toBe(false)
-	expect(firstItem.get("stats")).toBe(10)
+	expect(firstItem.get("stats")).toBe(1)
 })
 
 test.skipIf(!valuesJson)("first item tag tests", function () {
