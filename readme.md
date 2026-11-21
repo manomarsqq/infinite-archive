@@ -13,8 +13,8 @@ npm test           # vitest
 npm run viteBuild  # production build into dist/
 ```
 
-Scroll and curse data lives in `src/data/values.json`, one entry per line: 720 scrolls (60 of each kind, across
-all ten ranks) and 90 curses. About one in eight is adult content, flagged NSFW and hidden by default. Edit it by hand to add your own. A scroll's stat letters have to add up to its
+Scroll and curse data lives in `src/data/values.json`, one entry per line: 5,004 scrolls (417 of each kind, across
+all ten ranks) and 90 curses. About one in nine is adult content, flagged NSFW and hidden by default. Edit it by hand to add your own. A scroll's stat letters have to add up to its
 total and rank, as laid out in the Guide; `src/data/sampleValues.json` documents the columns.
 
 `npm run getData` is optional and **replaces** `values.json` with the contents of a Google Sheet in the same
